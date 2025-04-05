@@ -1,0 +1,71 @@
+{
+  "vocabularyCards": [
+    {
+      "key": "vocab1",
+      "label": "13 Atorvastatin side effects and how to manage them",
+      "imageUri": "https://alsallum.s3.eu-north-1.amazonaws.com/example.jpg",
+      "navigateTo": "vocabBasic"
+    },
+    {
+      "key": "vocab2",
+      "label": "13 Atorvastatin side effects and how to manage them",
+      "imageUri": "https://alsallum.s3.eu-north-1.amazonaws.com/example.jpg",
+      "navigateTo": "vocabBasic"
+    },
+    {
+      "key": "vocab3",
+      "label": "13 Atorvastatin side effects and how to manage them",
+      "imageUri": "https://alsallum.s3.eu-north-1.amazonaws.com/example.jpg",
+      "navigateTo": "vocabBasic"
+    },
+    {
+      "key": "vocab4",
+      "label": "13 Atorvastatin side effects and how to manage them",
+      "imageUri": "https://alsallum.s3.eu-north-1.amazonaws.com/example.jpg",
+      "navigateTo": "vocabBasic"
+    },
+    {
+      "key": "vocab5",
+      "label": "13 Atorvastatin side effects and how to manage them",
+      "imageUri": "https://alsallum.s3.eu-north-1.amazonaws.com/example.jpg",
+      "navigateTo": "vocabIntermediate"
+    }
+  ],
+  "vocabularyWords": [
+    {
+      "text": "اعثر على أفضل صيدلية لك",
+      "subText": "قارن الأسعار لتوفير المزيد",
+      "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/flask.png",
+      "navigateTo": "pharmacy",
+      "set": "set1"
+    },
+    {
+      "text": "انضم الى قود تريتمنت الذهبي",
+      "subText": "وفور لحد $2,862 في السنة",
+      "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/pills.png",
+      "navigateTo": "creative",
+      "set": "set2"
+    },
+    {
+      "text": "تواصل مع مقدم رعاية عبر الإنترنت",
+      "subText": "أسعار منخفضة مع قود تريتمنت كار",
+      "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/connect.png",
+      "navigateTo": "prescription",
+      "set": "set3"
+    }
+  ],
+  "ticketWords": [
+    {
+      "text": "Atorvastatin 40mg",
+      "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/example.jpg",
+      "navigateTo": "vocabulary/vocabulary",
+      "set": "set1"
+    },
+    {
+      "text": "Amlodipine 10mg",
+      "imagePath": "https://via.placeholder.com/100x100?text=Orange",
+      "navigateTo": "vocabulary/vocabulary",
+      "set": "set2"
+    }
+  ]
+}
