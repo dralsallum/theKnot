@@ -9,17 +9,19 @@ import {
   ActivityIndicator,
   StatusBar,
   Platform,
+  Modal,
+  TextInput,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import styled from "styled-components/native";
-import { publicRequest } from "../../requestMethods";
+import { publicRequest, createUserRequest } from "../../requestMethods";
+import { useSelector } from "react-redux"; // Import Redux selector
 
 const { width } = Dimensions.get("window");
 const STATUSBAR_HEIGHT = Platform.OS === "ios" ? 44 : StatusBar.currentHeight;
 
 // ---------- STYLED COMPONENTS ----------
-// Changed from SafeAreaView to View so header background goes edge-to-edge
 const Container = styled.View`
   flex: 1;
   background-color: #ffffff;
@@ -279,7 +281,6 @@ const PriceDetails = styled.Text`
   margin-top: 4px;
 `;
 
-// Updated for two-column layout:
 const FeatureRow = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
@@ -390,16 +391,145 @@ const LoadingContainer = styled.View`
   align-items: center;
 `;
 
-// ---------- MAIN COMPONENT ----------
+// ---------- MODAL STYLES ----------
+const ModalContainer = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.4);
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalCard = styled.View`
+  width: 90%;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+`;
+
+const ModalTitle = styled.Text`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-align: center;
+`;
+
+const StepIndicator = styled.Text`
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 16px;
+  text-align: center;
+`;
+
+const FormField = styled.TextInput`
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding-horizontal: 12px;
+  padding-vertical: 10px;
+  margin-bottom: 12px;
+`;
+
+const ModalButtonRow = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 12px;
+`;
+
+const ModalButton = styled.TouchableOpacity`
+  flex: 1;
+  margin-horizontal: 8px;
+  background-color: ${(props) => (props.primary ? "#ff69b4" : "#f0f0f0")};
+  padding-vertical: 12px;
+  border-radius: 8px;
+  align-items: center;
+`;
+
+const ModalButtonText = styled.Text`
+  color: ${(props) => (props.primary ? "#fff" : "#333")};
+  font-weight: bold;
+`;
+
+const CallModalContainer = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.4);
+  justify-content: flex-end;
+  align-items: center;
+`;
+
+const CallModalCard = styled.View`
+  width: 100%;
+  background-color: #fff;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 24px;
+`;
+
+const CallModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  text-align: center;
+`;
+
+const CallOption = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  padding: 16px;
+  border-bottom-width: 1px;
+  border-bottom-color: #eee;
+`;
+
+const CallOptionText = styled.Text`
+  font-size: 18px;
+  margin-left: 16px;
+`;
+
+const CancelButton = styled.TouchableOpacity`
+  margin-top: 16px;
+  background-color: #f0f0f0;
+  padding: 16px;
+  border-radius: 12px;
+  align-items: center;
+`;
+
+const CancelButtonText = styled.Text`
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+`;
+
 const Booking = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+
+  // ---------- FAVORITES LOGIC START ----------
+  // Redux for user auth
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const isAuthenticated = !!currentUser;
+  const userId = currentUser?._id || null;
+
+  // States
+  const [userFavorites, setUserFavorites] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Modal states
+  const [modalVisible, setModalVisible] = useState(false);
+  const [callModalVisible, setCallModalVisible] = useState(false);
+  const [formStep, setFormStep] = useState(1);
+
+  // Form data states
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [weddingDate, setWeddingDate] = useState("");
+  const [guestCount, setGuestCount] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [weddingDetails, setWeddingDetails] = useState("");
+
+  // Fetch venue details
   useEffect(() => {
     const fetchVenue = async () => {
       try {
@@ -419,11 +549,158 @@ const Booking = () => {
     }
   }, [id]);
 
+  // Fetch user favorites (if logged in)
+  useEffect(() => {
+    const fetchUserFavorites = async () => {
+      if (!isAuthenticated || !userId) return;
+
+      try {
+        const userReq = createUserRequest(); // properly handles token
+        const response = await userReq.get(`/users/${userId}/favorites`);
+        if (Array.isArray(response.data)) {
+          // If the API returns an array of vendor docs, we can map them to IDs
+          const favoriteIds = response.data.map((fav) =>
+            fav._id ? fav._id : fav
+          );
+          setUserFavorites(favoriteIds);
+
+          // Check if current venue is in favorites
+          if (id && favoriteIds.includes(id)) {
+            setIsFavorite(true);
+          }
+        }
+      } catch (err) {
+        console.log("Error fetching user favorites:", err);
+      }
+    };
+
+    fetchUserFavorites();
+  }, [isAuthenticated, userId, id]);
+
+  // Toggle favorite functionality
+  const toggleFavorite = async () => {
+    if (!isAuthenticated) {
+      // If user not logged in, prompt to sign-in
+      router.push("/sign-in");
+      return;
+    }
+
+    if (!id) return;
+
+    try {
+      const userReq = createUserRequest();
+
+      // Optimistic UI update
+      setIsFavorite(!isFavorite);
+
+      if (isFavorite) {
+        // Remove from favorites
+        setUserFavorites((prev) => prev.filter((item) => item !== id));
+        await userReq.delete(`/users/${userId}/favorites/${id}`);
+      } else {
+        // Add to favorites
+        setUserFavorites((prev) => [...prev, id]);
+        await userReq.post(`/users/${userId}/favorites`, { vendorId: id });
+      }
+    } catch (err) {
+      console.log("Error toggling favorite:", err);
+      // Revert UI if error
+      setIsFavorite(!isFavorite);
+    }
+  };
+  // ---------- FAVORITES LOGIC END ----------
+
   const onScrollEnd = (e) => {
     let contentOffset = e.nativeEvent.contentOffset.x;
     let index = Math.round(contentOffset / width);
     setCurrentIndex(index);
   };
+
+  const handleOpenQuoteModal = () => {
+    // Reset form if needed:
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setWeddingDate("");
+    setGuestCount("");
+    setPhoneNumber("");
+    setWeddingDetails("");
+    setFormStep(1);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  const handleNextStep = () => {
+    if (formStep === 1) {
+      // Validate step-1 fields if needed
+      setFormStep(2);
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (formStep === 2) {
+      setFormStep(1);
+    }
+  };
+
+  const handleSubmitForm = () => {
+    // Do final submission or call an API
+    console.log("Form data:", {
+      firstName,
+      lastName,
+      email,
+      weddingDate,
+      guestCount,
+      phoneNumber,
+      weddingDetails,
+    });
+    // Then close modal
+    setModalVisible(false);
+    // Possibly show a success message or navigate
+  };
+
+  // ---------- CALL LOGIC START ----------
+  const handleOpenCallModal = () => {
+    setCallModalVisible(true);
+  };
+
+  const handleCloseCallModal = () => {
+    setCallModalVisible(false);
+  };
+
+  const handleMakeCall = async (phoneNum) => {
+    // Default to venue phone number if provided, otherwise use a fallback
+    const numberToCall = phoneNum || venue?.phone || "1234567890";
+
+    const phoneUrl = `tel:${numberToCall}`;
+
+    try {
+      const supported = await Linking.canOpenURL(phoneUrl);
+
+      if (supported) {
+        await Linking.openURL(phoneUrl);
+      } else {
+        Alert.alert(
+          "Cannot Make Call",
+          "Your device doesn't support making phone calls or no phone app is available.",
+          [{ text: "OK" }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "An error occurred while trying to make the call. Please try again.",
+        [{ text: "OK" }]
+      );
+      console.error("Error making call:", error);
+    } finally {
+      handleCloseCallModal();
+    }
+  };
+  // ---------- CALL LOGIC END ----------
 
   if (loading) {
     return (
@@ -469,6 +746,12 @@ const Booking = () => {
     { icon: "music", text: "Live music allowed" },
   ];
 
+  // Phone numbers for the venue
+  const venuePhoneNumbers = [
+    { type: "Main Office", number: venue.phone || "555-123-4567" },
+    { type: "Sales Team", number: venue.salesPhone || "555-987-6543" },
+  ];
+
   return (
     <Container>
       <StatusBar
@@ -486,7 +769,7 @@ const Booking = () => {
         <ShareButton>
           <Feather name="share" size={20} color="#000" />
         </ShareButton>
-        <FavoriteButton onPress={() => setIsFavorite(!isFavorite)}>
+        <FavoriteButton onPress={toggleFavorite}>
           <Feather
             name="heart"
             size={20}
@@ -517,9 +800,9 @@ const Booking = () => {
           )}
 
           <PageIndicator>
-            <PageIndicatorText>{`${currentIndex + 1}/${
-              images.length
-            }`}</PageIndicatorText>
+            <PageIndicatorText>
+              {`${currentIndex + 1}/${images.length}`}
+            </PageIndicatorText>
           </PageIndicator>
 
           <PageDotsContainer>
@@ -606,14 +889,125 @@ const Booking = () => {
       {/* Sticky Bottom Bar */}
       <ButtonsRowWrapper>
         <ButtonsRow>
-          <CallButton>
+          <CallButton onPress={handleOpenCallModal}>
             <CallButtonText>Call</CallButtonText>
           </CallButton>
-          <QuoteButton>
+          <QuoteButton onPress={handleOpenQuoteModal}>
             <QuoteButtonText>Request Quote</QuoteButtonText>
           </QuoteButton>
         </ButtonsRow>
       </ButtonsRowWrapper>
+
+      {/* 2-STEP MODAL */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <ModalContainer>
+          <ModalCard>
+            {formStep === 1 ? (
+              <>
+                <ModalTitle>Contact Info</ModalTitle>
+                <StepIndicator>Step 1 of 2</StepIndicator>
+
+                <FormField
+                  placeholder="First Name"
+                  value={firstName}
+                  onChangeText={setFirstName}
+                />
+                <FormField
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChangeText={setLastName}
+                />
+                <FormField
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+                <FormField
+                  placeholder="Estimated Wedding Date (MM/DD/YYYY)"
+                  value={weddingDate}
+                  onChangeText={setWeddingDate}
+                />
+                <FormField
+                  placeholder="Estimated Guest Count"
+                  value={guestCount}
+                  onChangeText={setGuestCount}
+                />
+                <FormField
+                  placeholder="Phone Number (optional)"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                />
+
+                <ModalButtonRow>
+                  <ModalButton onPress={handleCloseModal}>
+                    <ModalButtonText>Cancel</ModalButtonText>
+                  </ModalButton>
+                  <ModalButton onPress={handleNextStep} primary>
+                    <ModalButtonText primary>Next</ModalButtonText>
+                  </ModalButton>
+                </ModalButtonRow>
+              </>
+            ) : (
+              <>
+                <ModalTitle>About Your Wedding</ModalTitle>
+                <StepIndicator>Step 2 of 2</StepIndicator>
+
+                <FormField
+                  placeholder="Describe what's important for your wedding..."
+                  value={weddingDetails}
+                  onChangeText={setWeddingDetails}
+                  multiline
+                  style={{ height: 100, textAlignVertical: "top" }}
+                />
+
+                <ModalButtonRow>
+                  <ModalButton onPress={handlePreviousStep}>
+                    <ModalButtonText>Back</ModalButtonText>
+                  </ModalButton>
+                  <ModalButton onPress={handleSubmitForm} primary>
+                    <ModalButtonText primary>Submit</ModalButtonText>
+                  </ModalButton>
+                </ModalButtonRow>
+              </>
+            )}
+          </ModalCard>
+        </ModalContainer>
+      </Modal>
+
+      {/* CALL MODAL */}
+      <Modal
+        visible={callModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseCallModal}
+      >
+        <CallModalContainer>
+          <CallModalCard>
+            <CallModalTitle>Call {venue.name}</CallModalTitle>
+
+            {venuePhoneNumbers.map((phoneInfo, index) => (
+              <CallOption
+                key={index}
+                onPress={() => handleMakeCall(phoneInfo.number)}
+              >
+                <Feather name="phone" size={24} color="#ff69b4" />
+                <CallOptionText>
+                  {phoneInfo.type}: {phoneInfo.number}
+                </CallOptionText>
+              </CallOption>
+            ))}
+
+            <CancelButton onPress={handleCloseCallModal}>
+              <CancelButtonText>Cancel</CancelButtonText>
+            </CancelButton>
+          </CallModalCard>
+        </CallModalContainer>
+      </Modal>
     </Container>
   );
 };

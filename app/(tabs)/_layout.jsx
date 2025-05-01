@@ -100,7 +100,7 @@ const TabNavigator = () => {
     },
     {
       name: "creative",
-      title: "المفردات",
+      title: "قاعات",
       icon: icons.words,
     },
     {
@@ -111,7 +111,7 @@ const TabNavigator = () => {
     },
     {
       name: "stories",
-      title: "قصص",
+      title: "المتجر",
       icon: icons.stories,
     },
     {

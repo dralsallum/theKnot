@@ -78,7 +78,6 @@ const RooyLayout = () => {
   return (
     <Provider store={store}>
       <NotificationProvider>
-        {/* RootProvider handles rehydration & appsFlyer initialization */}
         <RootProvider>
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />

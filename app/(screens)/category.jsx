@@ -9,11 +9,14 @@ import {
   Dimensions,
   ActivityIndicator,
   Platform,
+  Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useSelector } from "react-redux";
 import styled from "styled-components/native";
-import { publicRequest } from "../../requestMethods";
+import { publicRequest, createUserRequest } from "../../requestMethods";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 const STATUSBAR_HEIGHT = Platform.OS === "ios" ? 44 : StatusBar.currentHeight;
@@ -25,7 +28,6 @@ const Container = styled.View`
   background-color: #ffffff;
 `;
 
-// Add extra top padding using STATUSBAR_HEIGHT so that icons are pushed down.
 const HeaderBar = styled.View`
   flex-direction: row;
   align-items: center;
@@ -309,16 +311,25 @@ const LoadingContainer = styled.View`
   align-items: center;
 `;
 
+// Heart icon component with animation
+const HeartIcon = styled(Feather)`
+  color: ${(props) => (props.isFavorite ? "#e066a6" : "white")};
+`;
+
 // ---------- MAIN COMPONENT ----------
 const Category = () => {
   const router = useRouter();
   const { category, id } = useLocalSearchParams();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  // Change from a single vendor to an array of vendors
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userFavorites, setUserFavorites] = useState([]);
+
+  // Get authentication info from Redux instead of AsyncStorage
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const isAuthenticated = !!currentUser;
+  const userId = currentUser?._id || null;
 
   // Function to navigate to vendor details
   const navigateToVendorDetails = (vendorId) => {
@@ -328,14 +339,81 @@ const Category = () => {
     });
   };
 
+  // Navigate to favorites page
+  const navigateToFavorites = () => {
+    router.push("/favorites");
+  };
+
   // Format category name for display
   const formatCategoryName = (cat) => {
     if (!cat) return "";
     return cat.charAt(0).toUpperCase() + cat.slice(1);
   };
 
+  // Check if a vendor is in favorites
+  const isVendorFavorite = (vendorId) => {
+    return userFavorites.some((id) => id === vendorId);
+  };
+
+  // Toggle favorite status with improved handling
+  const toggleFavorite = async (vendorId, e) => {
+    // Prevent navigation to vendor details when heart is clicked
+    if (e) e.stopPropagation();
+
+    if (!isAuthenticated) {
+      Alert.alert("Sign In Required", "Please sign in to save favorites", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Sign In",
+          onPress: () => router.push("/sign-in"),
+        },
+      ]);
+      return;
+    }
+
+    try {
+      console.log(`Attempting to toggle favorite for vendor: ${vendorId}`);
+
+      // Create userRequest instance when needed (proper token handling)
+      const userRequest = createUserRequest();
+
+      const isFavorite = isVendorFavorite(vendorId);
+      console.log(
+        `Vendor is ${isFavorite ? "already a favorite" : "not a favorite yet"}`
+      );
+
+      if (isFavorite) {
+        // Remove from favorites (optimistic UI update first)
+        setUserFavorites(userFavorites.filter((id) => id !== vendorId));
+        console.log(`Removing vendor ${vendorId} from favorites`);
+
+        await userRequest.delete(`/users/${userId}/favorites/${vendorId}`);
+        console.log(`Successfully removed vendor ${vendorId} from favorites`);
+      } else {
+        // Add to favorites (optimistic UI update first)
+        setUserFavorites([...userFavorites, vendorId]);
+        console.log(`Adding vendor ${vendorId} to favorites`);
+
+        await userRequest.post(`/users/${userId}/favorites`, { vendorId });
+        console.log(`Successfully added vendor ${vendorId} to favorites`);
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+
+      // Revert the optimistic UI update
+      if (isVendorFavorite(vendorId)) {
+        setUserFavorites(userFavorites.filter((id) => id !== vendorId));
+      } else {
+        setUserFavorites([...userFavorites, vendorId]);
+      }
+
+      Alert.alert("Error", "Could not update favorites. Please try again.");
+    }
+  };
+
   // Fallback mock data function based on category
   const getCategoryMockData = (category, id) => {
+    // Mock data implementation unchanged
     const defaultData = {
       id: id || "defaultId",
       location: "Charlottesville, VA",
@@ -379,6 +457,7 @@ const Category = () => {
             },
           ],
         };
+      // Other cases remain unchanged
       case "dj":
         return {
           ...defaultData,
@@ -436,6 +515,40 @@ const Category = () => {
     }
   };
 
+  // Fetch user favorites
+  useEffect(() => {
+    const fetchUserFavorites = async () => {
+      if (!isAuthenticated || !userId) {
+        console.log("User not authenticated via Redux state");
+        return;
+      }
+
+      try {
+        console.log("Fetching favorites for user:", userId);
+        // Create userRequest instance when needed (proper token handling)
+        const userRequest = createUserRequest();
+
+        const response = await userRequest.get(`/users/${userId}/favorites`);
+        console.log("Favorites response:", response.data);
+
+        if (response.data && Array.isArray(response.data)) {
+          // Extract just the IDs for easier checking
+          const favoriteIds = response.data.map(
+            (favorite) => favorite._id || favorite
+          );
+          setUserFavorites(favoriteIds);
+          console.log("User favorites set:", favoriteIds);
+        }
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+        // Don't show alert here to avoid disrupting the UX
+      }
+    };
+
+    fetchUserFavorites();
+  }, [userId, isAuthenticated]);
+
+  // Fetch vendors
   useEffect(() => {
     const fetchVendors = async () => {
       try {
@@ -447,7 +560,7 @@ const Category = () => {
           response = await publicRequest.get(`/vendors/${id}`);
           setVendors([response.data]);
         }
-        // Otherwise, fetch all vendors for the category (note: no limit parameter)
+        // Otherwise, fetch all vendors for the category
         else if (category) {
           response = await publicRequest.get(`/vendors?category=${category}`);
           if (Array.isArray(response.data) && response.data.length > 0) {
@@ -470,6 +583,15 @@ const Category = () => {
 
     fetchVendors();
   }, [category, id]);
+
+  // Log authentication status to confirm it's working
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log("User is authenticated via Redux with ID:", userId);
+    } else {
+      console.log("User not authenticated via Redux state");
+    }
+  }, [isAuthenticated, userId]);
 
   const onScrollEnd = (e) => {
     let contentOffset = e.nativeEvent.contentOffset.x;
@@ -540,6 +662,9 @@ const Category = () => {
         </HeaderTitle>
 
         <HeaderActionButtons>
+          <ActionButton onPress={navigateToFavorites}>
+            <Feather name="heart" size={24} color="#e066a6" />
+          </ActionButton>
           <ActionButton>
             <Feather name="search" size={24} color="#000" />
           </ActionButton>
@@ -553,30 +678,43 @@ const Category = () => {
         {/* Map over all vendors and wrap each card in a TouchableOpacity */}
         {vendors.map((vendorItem) => (
           <TouchableOpacity
-            key={vendorItem.id}
-            onPress={() => navigateToVendorDetails(vendorItem.id)}
+            key={vendorItem.id || vendorItem._id}
+            onPress={() =>
+              navigateToVendorDetails(vendorItem.id || vendorItem._id)
+            }
             activeOpacity={0.8}
           >
             <View>
               {/* First Image Carousel */}
               <CarouselContainer>
-                <CarouselImage source={images[0]} resizeMode="cover" />
+                <CarouselImage
+                  source={
+                    vendorItem.images && vendorItem.images.length > 0
+                      ? { uri: vendorItem.images[0] }
+                      : images[0]
+                  }
+                  resizeMode="cover"
+                />
                 <TouchableOpacity
                   style={{
                     position: "absolute",
                     top: 16,
                     right: 16,
                     zIndex: 10,
+                    backgroundColor: "rgba(255,255,255,0.3)",
+                    borderRadius: 20,
+                    padding: 8,
                   }}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    setIsFavorite(!isFavorite);
-                  }}
+                  onPress={(e) =>
+                    toggleFavorite(vendorItem.id || vendorItem._id, e)
+                  }
                 >
-                  <Feather
+                  <HeartIcon
                     name="heart"
                     size={32}
-                    color={isFavorite ? "#e066a6" : "white"}
+                    isFavorite={isVendorFavorite(
+                      vendorItem.id || vendorItem._id
+                    )}
                   />
                 </TouchableOpacity>
               </CarouselContainer>
@@ -629,7 +767,14 @@ const Category = () => {
               {/* Second Image with Offer (if a second offer exists) */}
               {vendorItem.offers && vendorItem.offers.length > 1 && (
                 <SecondImage>
-                  <SecondCarouselImage source={images[1]} resizeMode="cover" />
+                  <SecondCarouselImage
+                    source={
+                      vendorItem.images && vendorItem.images.length > 1
+                        ? { uri: vendorItem.images[1] }
+                        : images[1]
+                    }
+                    resizeMode="cover"
+                  />
                   <OfferBadge>
                     <OfferText>
                       <OfferAmount>{vendorItem.offers[1].title}</OfferAmount>
@@ -652,15 +797,18 @@ const Category = () => {
                     </OfferText>
                   </OfferBadge>
                   <FavoriteButton
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setIsFavorite(!isFavorite);
-                    }}
+                    onPress={(e) =>
+                      toggleFavorite(vendorItem.id || vendorItem._id, e)
+                    }
                   >
                     <Feather
                       name="heart"
                       size={26}
-                      color={isFavorite ? "#e066a6" : "#000"}
+                      color={
+                        isVendorFavorite(vendorItem.id || vendorItem._id)
+                          ? "#e066a6"
+                          : "#000"
+                      }
                     />
                   </FavoriteButton>
                 </SecondImage>

@@ -2,7 +2,7 @@
   "expo": {
     "name": "theknot",
     "slug": "theknot",
-    "version": "1.1.1",
+    "version": "1.1.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "theknot",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dralsallum.theknot",
-      "buildNumber": "1",
+      "buildNumber": "7",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -25,6 +25,7 @@
         },
         "NSPhotoLibraryUsageDescription": "This app requires access to your photo library to upload images.",
         "NSMicrophoneUsageDescription": "This app needs access to the microphone for audio playback.",
+        "NSContactsUsageDescription": "This app requires access to your contacts to add guests to your wedding.",
         "SKAdNetworkItems": [
           {
             "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"
@@ -70,7 +71,7 @@
           }
         ],
         "NSPrivacyPolicyURL": "https://www.treatment.net/privacy-policy",
-        "LSMinimumSystemVersion": "12.0"
+        "LSMinimumSystemVersion": "14.0"
       },
       "notification": {
         "icon": "./assets/icons/notification.png",
@@ -79,13 +80,14 @@
       }
     },
     "android": {
-      "versionCode": 1,
+      "versionCode": 4,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "com.google.android.gms.permission.AD_ID"
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.READ_CONTACTS"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",

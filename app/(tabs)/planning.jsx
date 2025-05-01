@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components/native";
 import { Ionicons, FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function PlanningScreen() {
   return (
@@ -8,36 +9,41 @@ export default function PlanningScreen() {
       <Main />
       <IconsContainer>
         <OuterCircleRow>
-          <CircleContainer>
-            <Circle>
-              <FontAwesome name="dollar" size={24} color="white" />
-            </Circle>
-            <Label>Budget Advisor</Label>
-          </CircleContainer>
-
-          <CircleContainer style={{ marginTop: -30 }}>
-            <Circle>
-              <MaterialIcons name="list-alt" size={24} color="white" />
-            </Circle>
-            <Label>Checklist</Label>
-          </CircleContainer>
-
-          <CircleContainer style={{ marginTop: -30 }}>
-            <Circle>
-              <Ionicons name="people" size={24} color="white" />
-            </Circle>
-            <Label>Guest List</Label>
-          </CircleContainer>
-
-          <CircleContainer>
-            <Circle>
-              <Ionicons name="heart" size={24} color="white" />
-            </Circle>
-            <Label>Your Vision</Label>
-          </CircleContainer>
+          <CircleButton
+            route="/budget"
+            icon={<FontAwesome name="dollar" size={24} color="white" />}
+            label="Budget Advisor"
+          />
+          <CircleButton
+            route="/checklist"
+            style={{ marginTop: -30 }}
+            icon={<MaterialIcons name="list-alt" size={24} color="white" />}
+            label="Checklist"
+          />
+          <CircleButton
+            route="/guest"
+            style={{ marginTop: -30 }}
+            icon={<Ionicons name="people" size={24} color="white" />}
+            label="Guest List"
+          />
+          <CircleButton
+            route="/favorite"
+            icon={<Ionicons name="heart" size={24} color="white" />}
+            label="Your Vision"
+          />
         </OuterCircleRow>
       </IconsContainer>
     </Container>
+  );
+}
+
+function CircleButton({ route, icon, label, style }) {
+  const router = useRouter();
+  return (
+    <CircleContainer style={style} onPress={() => router.push(route)}>
+      <Circle>{icon}</Circle>
+      <Label>{label}</Label>
+    </CircleContainer>
   );
 }
 

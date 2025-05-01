@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   View,
@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import styled from "styled-components/native";
+import { useSelector } from "react-redux";
+import { createUserRequest } from "../../requestMethods";
 
 /* ---------- STYLED COMPONENTS ---------- */
 const Container = styled.SafeAreaView`
@@ -243,33 +245,58 @@ const vendorData = [
   { title: "Beauty services", range: "$101 - $201 per person" },
 ];
 
-/* ---------- BOTTOM MODAL STYLES FOR GOAL BUDGET ---------- */
-const BottomModalOverlay = styled.View`
+/* ---------- CENTERED MODAL STYLES FOR GOAL BUDGET ---------- */
+const CenterModalOverlay = styled.View`
   flex: 1;
   background-color: rgba(0, 0, 0, 0.5);
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
 `;
 
-const BottomModalContainer = styled.View`
-  width: 100%;
+const CenterModalContainer = styled.View`
+  width: 80%;
   background-color: #fff;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  padding: 30px 20px 60px 20px;
+  border-radius: 16px;
+  padding: 30px 20px;
 `;
 
+/* ---------- MAIN COMPONENT ---------- */
 const Budget = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
   const [goalBudget, setGoalBudget] = useState("");
   const [selectedBudget, setSelectedBudget] = useState(20430);
+  const user = useSelector((state) => state.user.currentUser);
+  const userId = user?._id;
+
+  // Fetch the budget from the backend when the component mounts (or when userId changes)
+  useEffect(() => {
+    const fetchBudget = async () => {
+      if (!userId) return;
+      try {
+        const res = await createUserRequest().get(`/users/budget/${userId}`);
+        // Update the budget or fallback to default if not set
+        setSelectedBudget(res.data.budget || 20430);
+      } catch (error) {
+        console.error("Error fetching budget", error);
+      }
+    };
+    fetchBudget();
+  }, [userId]);
 
   // When user saves the goal budget
-  const handleSaveGoalBudget = () => {
+  const handleSaveGoalBudget = async () => {
     const numericBudget = parseInt(goalBudget, 10);
     if (!isNaN(numericBudget)) {
-      setSelectedBudget(numericBudget);
+      try {
+        const res = await createUserRequest().put(`/users/budget/${userId}`, {
+          budget: numericBudget,
+        });
+        setSelectedBudget(res.data.budget);
+      } catch (error) {
+        console.error("Error updating budget", error);
+      }
     }
     setGoalModalVisible(false);
   };
@@ -281,14 +308,11 @@ const Budget = () => {
       {/* HEADER WITH BACK ARROW */}
       <Header>
         <HeaderRow>
-          {/* Arrow that takes the user back */}
           <TouchableOpacity onPress={() => router.back()}>
             <BackArrow>←</BackArrow>
           </TouchableOpacity>
-
           <Title>Budget Advisor</Title>
         </HeaderRow>
-
         <Subtitle>
           Get cost estimates and a breakdown of what couples in your area
           typically spend.
@@ -317,80 +341,7 @@ const Budget = () => {
           <SectionSubtitle>
             Most couples spend: $8,490 - $23,480
           </SectionSubtitle>
-
-          <TouchableOpacity
-            onPress={() => {
-              // navigate to Photographers
-            }}
-          >
-            <LinkText>Photographers</LinkText>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              // show more info
-            }}
-          >
-            <LinkText>Learn more</LinkText>
-          </TouchableOpacity>
-
-          {/* --- ADDITIONAL CONTENT (like the screenshot) --- */}
-          <View style={{ marginTop: 20 }}>
-            <TouchableOpacity>
-              <Text
-                style={{ color: "#ec4899", fontSize: 16, fontWeight: "600" }}
-              >
-                Browse photographers
-              </Text>
-            </TouchableOpacity>
-
-            {/* "Compare cost by location" Card */}
-            <View
-              style={{
-                marginTop: 20,
-                backgroundColor: "#fff",
-                borderRadius: 12,
-                padding: 20,
-              }}
-            >
-              <Text
-                style={{ fontSize: 16, fontWeight: "600", marginBottom: 10 }}
-              >
-                Compare cost by location
-              </Text>
-              <TouchableOpacity>
-                <Text style={{ color: "#0066cc", marginBottom: 10 }}>
-                  See map
-                </Text>
-              </TouchableOpacity>
-
-              {/* Placeholder for the map image */}
-              <View
-                style={{
-                  marginTop: 20,
-                  width: "100%",
-                  height: 200,
-                  backgroundColor: "#eee",
-                  borderRadius: 12,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text>Map Placeholder</Text>
-              </View>
-            </View>
-
-            {/* Budgeter note */}
-            <Text style={{ marginTop: 20, fontSize: 14, color: "#666" }}>
-              You can keep tracking expenses in our Budgeter until July 31,
-              2025.{" "}
-              <Text
-                style={{ color: "#0066cc", textDecorationLine: "underline" }}
-              >
-                Manage expenses
-              </Text>
-            </Text>
-          </View>
+          {/* … Additional UI … */}
         </InfoContainer>
       </ScrollView>
 
@@ -403,18 +354,15 @@ const Budget = () => {
       >
         <ModalOverlay>
           <ModalContainer>
-            {/* Top Bar */}
             <ModalHeader>
               <HeaderSection align="flex-start">
                 <TouchableOpacity onPress={() => setModalVisible(false)}>
                   <HeaderText>Cancel</HeaderText>
                 </TouchableOpacity>
               </HeaderSection>
-
               <HeaderSection>
                 <HeaderText>Customize</HeaderText>
               </HeaderSection>
-
               <HeaderSection align="flex-end">
                 <TouchableOpacity onPress={() => setModalVisible(false)}>
                   <HeaderText>Save</HeaderText>
@@ -422,7 +370,6 @@ const Budget = () => {
               </HeaderSection>
             </ModalHeader>
 
-            {/* Modal Body */}
             <ModalTitle>Select vendors for your budget</ModalTitle>
             <ModalDescription>
               Start your budget with the latest spending trends in{" "}
@@ -435,7 +382,6 @@ const Budget = () => {
                 <BudgetAmount>${selectedBudget}</BudgetAmount>
                 <BudgetNote>Based on selections</BudgetNote>
               </BudgetLeft>
-
               <GoalButton
                 onPress={() => {
                   setModalVisible(false);
@@ -446,7 +392,6 @@ const Budget = () => {
               </GoalButton>
             </BudgetRow>
 
-            {/* Vendor List */}
             <ScrollView style={{ flex: 1 }}>
               {vendorData.map((item, index) => (
                 <VendorItem key={index}>
@@ -462,22 +407,21 @@ const Budget = () => {
         </ModalOverlay>
       </Modal>
 
-      {/* ---------- SECOND "Set Goal Budget" MODAL ---------- */}
+      {/* ---------- CENTERED "Set Goal Budget" MODAL ---------- */}
       <Modal
         visible={goalModalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent
         onRequestClose={() => setGoalModalVisible(false)}
       >
-        <BottomModalOverlay>
-          <BottomModalContainer>
+        <CenterModalOverlay>
+          <CenterModalContainer>
             <ModalHeader>
               <HeaderSection align="flex-start">
                 <TouchableOpacity onPress={() => setGoalModalVisible(false)}>
                   <HeaderText>Cancel</HeaderText>
                 </TouchableOpacity>
               </HeaderSection>
-
               <HeaderSection align="flex-end">
                 <TouchableOpacity onPress={handleSaveGoalBudget}>
                   <HeaderText>Save</HeaderText>
@@ -503,8 +447,8 @@ const Budget = () => {
                 onChangeText={setGoalBudget}
               />
             </View>
-          </BottomModalContainer>
-        </BottomModalOverlay>
+          </CenterModalContainer>
+        </CenterModalOverlay>
       </Modal>
     </Container>
   );

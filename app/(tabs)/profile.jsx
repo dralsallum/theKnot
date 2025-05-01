@@ -12,11 +12,10 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { userSelector } from "../redux/authSlice";
-import { xpSelector } from "../redux/lessonsSlice";
-import { selectScore } from "../redux/scoreSlice";
+
 import { useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
-import ConfettiCannon from "react-native-confetti-cannon";
+
 import { Audio } from "expo-av";
 import { createUserRequest } from "../../requestMethods";
 
@@ -712,105 +711,10 @@ const BadgeItemComponent = ({ icon, label, isUnlocked }) => (
 /* Profile Component */
 const Profile = () => {
   const { currentUser } = useSelector(userSelector);
-  const isPaid = currentUser?.isPaid;
-  const xp = useSelector(xpSelector);
-  const score = useSelector(selectScore);
   const router = useRouter();
-  const streakCount = currentUser?.streak?.count ?? 0;
-  const highestStreak = currentUser?.streak?.highest ?? 0;
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedChapters, setSelectedChapters] = useState(1);
-  const [selectedTrainingDays, setSelectedTrainingDays] = useState(1);
-  const [isDaily, setIsDaily] = useState(true);
-  const [newBadgeEarned, setNewBadgeEarned] = useState(null);
-  const [earnedBadges, setEarnedBadges] = useState(null);
-  const [sound, setSound] = useState();
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [invitesAccepted, setInvitesAccepted] = useState(0);
   const [referralLink, setReferralLink] = useState("");
-
-  // Badge Detection
-  useEffect(() => {
-    if (earnedBadges !== null && xp !== null) {
-      const newlyEarnedBadges = badges.filter(
-        (badge) => xp >= badge.requiredXp && !earnedBadges.includes(badge.label)
-      );
-
-      if (newlyEarnedBadges.length > 0 && !newBadgeEarned) {
-        const latestBadge = newlyEarnedBadges[0];
-        setNewBadgeEarned(latestBadge);
-        updateBadgeInBackend(latestBadge.label);
-        setEarnedBadges((prevBadges) => [...prevBadges, latestBadge.label]);
-      }
-    }
-  }, [xp]);
-
-  const closeBadgeModal = () => {
-    setNewBadgeEarned(null);
-  };
-
-  const updateBadgeInBackend = async (badgeLabel) => {
-    try {
-      const userRequest = createUserRequest();
-      const response = await userRequest.post(
-        `/users/${currentUser._id}/badges`,
-        { badge: badgeLabel }
-      );
-      if (response.status === 200) {
-        console.log("Badge updated in backend");
-      } else {
-        console.error(
-          "Failed to update badge in backend:",
-          response.data.message
-        );
-      }
-    } catch (error) {
-      console.error("Error updating badge in backend:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (newBadgeEarned) {
-      playSound();
-    }
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, [newBadgeEarned]);
-
-  async function playSound() {
-    const { sound } = await Audio.Sound.createAsync({
-      uri: "https://alsallum.s3.eu-north-1.amazonaws.com/congragulation.mp3",
-    });
-    setSound(sound);
-    await sound.playAsync();
-  }
-
-  useEffect(() => {
-    if (currentUser) {
-      fetchEarnedBadges();
-    }
-  }, [currentUser]);
-
-  const fetchEarnedBadges = async () => {
-    try {
-      const userRequest = createUserRequest();
-      const response = await userRequest.get(
-        `/users/${currentUser._id}/badges`
-      );
-      if (response.status === 200) {
-        setEarnedBadges(response.data.badges || []);
-      } else {
-        console.error("Failed to fetch badges:", response.data.message);
-        setEarnedBadges([]);
-      }
-    } catch (error) {
-      console.error("Error fetching badges:", error);
-      setEarnedBadges([]);
-    }
-  };
 
   // Invite Function
   const handleInvite = async () => {
@@ -921,125 +825,6 @@ const Profile = () => {
           </IconButton>
         </Header>
 
-        {/* Upgrade Section */}
-        {!isPaid && (
-          <UpgradeContainer>
-            <SectionHeader>
-              <SectionTitleText>الترقية</SectionTitleText>
-              <SeeMoreButton onPress={() => handleSeeMore("Upgrade")}>
-                <SeeMoreIcon source={require("../../assets/icons/back.png")} />
-                <SeeMoreButtonText>عرض المزيد</SeeMoreButtonText>
-              </SeeMoreButton>
-            </SectionHeader>
-            <UpgradeContent>
-              <CrownIcon source={require("../../assets/images/crown.png")} />
-              <UpgradeText>الترقية إلى النسخة المميزة</UpgradeText>
-            </UpgradeContent>
-          </UpgradeContainer>
-        )}
-        {/* Goals Section */}
-        <GoalsContainer>
-          <GoalsHeader>
-            <GoalsTitle>الهدف اليومي</GoalsTitle>
-          </GoalsHeader>
-          <GoalsToggle>
-            <ToggleButton
-              active={isDaily}
-              onPress={() => setIsDaily(true)}
-              isFirst
-            >
-              <ToggleText active={isDaily}>يومي</ToggleText>
-            </ToggleButton>
-            <ToggleButton active={!isDaily} onPress={() => setIsDaily(false)}>
-              <ToggleText active={!isDaily}>أسبوعي</ToggleText>
-            </ToggleButton>
-          </GoalsToggle>
-          <DailyProgress>
-            {isDaily ? (
-              <>
-                <ProgressRow>
-                  <ProgressText>فصول</ProgressText>
-                  <ProgressValue>
-                    {selectedChapters}/{xp}
-                  </ProgressValue>
-                </ProgressRow>
-                <ProgressRow>
-                  <ProgressText>تدريبات</ProgressText>
-                  <ProgressValue>
-                    {selectedTrainingDays}/{score}
-                  </ProgressValue>
-                </ProgressRow>
-              </>
-            ) : (
-              <>
-                <ProgressRow>
-                  <ProgressText>فصول مكتملة</ProgressText>
-                  <ProgressValue>30/{xp}</ProgressValue>
-                </ProgressRow>
-                <ProgressRow>
-                  <ProgressText>تدريبات مكتملة</ProgressText>
-                  <ProgressValue>30/{score}</ProgressValue>
-                </ProgressRow>
-              </>
-            )}
-          </DailyProgress>
-          {/* New Button to Open Modal */}
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            style={{ marginTop: 20, alignSelf: "center" }}
-          >
-            <StyledButton>
-              <ButtonText>تحديد الأهداف</ButtonText>
-            </StyledButton>
-          </TouchableOpacity>
-        </GoalsContainer>
-
-        {/* Streak Section */}
-        <StreakContainer>
-          <SectionHeader>
-            <StreakTitle>احصاءات</StreakTitle>
-          </SectionHeader>
-          <StreakStats>
-            <StreakBadge>
-              <BadgeIconStyled
-                source={require("../../assets/icons/purpleFire.png")}
-              />
-              <BadgeLabel>{streakCount} أيام</BadgeLabel>
-            </StreakBadge>
-            <ProgressBarContainer>
-              <CurrentStreak>ايام الحماس: {streakCount}</CurrentStreak>
-              <HighestStreak>أعلى حماسة: {highestStreak}</HighestStreak>
-              <ProgressBarBackground>
-                <ProgressBar progress={(streakCount / 30) * 100} />
-              </ProgressBarBackground>
-            </ProgressBarContainer>
-          </StreakStats>
-        </StreakContainer>
-
-        {/* Badges Section */}
-        <BadgesContainer>
-          <SectionHeader>
-            <SectionTitleText>شارات</SectionTitleText>
-          </SectionHeader>
-          <BadgesGrid>
-            {badges.map((badge, index) => {
-              // Determine if badge is unlocked
-              const isUnlocked =
-                Array.isArray(earnedBadges) &&
-                earnedBadges.includes(badge.label);
-
-              return (
-                <BadgeItemComponent
-                  key={index}
-                  icon={badge.icon}
-                  label={badge.label}
-                  isUnlocked={isUnlocked}
-                />
-              );
-            })}
-          </BadgesGrid>
-        </BadgesContainer>
-
         {/* Invite Section */}
         <InviteContainer>
           <InviteIcon source={require("../../assets/icons/invite.png")} />
@@ -1055,55 +840,6 @@ const Profile = () => {
           </InviteButton>
         </InviteContainer>
       </StyledScrollView>
-
-      {/* Goals Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <ModalOverlay>
-          <ModalContainer>
-            {/* Modal Header with Close Button */}
-            <ModalHeader>
-              <ModalTitleStyled>تحديد الأهداف</ModalTitleStyled>
-              <CloseButton onPress={() => setModalVisible(false)}>
-                <AntDesign name="close" size={24} color="#333333" />
-              </CloseButton>
-            </ModalHeader>
-
-            {/* Modal Content */}
-            <ModalContent>
-              {/* Chapters Number Slider */}
-              <NumberSlider
-                label="عدد الفصول:"
-                numbers={[1, 2, 3, 4, 5, 6, 7, 8]}
-                selectedValue={selectedChapters}
-                onSelect={setSelectedChapters}
-              />
-
-              {/* Training Days Number Slider */}
-              <NumberSlider
-                label="أيام التدريب:"
-                numbers={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
-                selectedValue={selectedTrainingDays}
-                onSelect={setSelectedTrainingDays}
-              />
-            </ModalContent>
-
-            {/* Modal Buttons */}
-            <ModalButtons>
-              <ModalButton onPress={() => setModalVisible(false)}>
-                <ButtonTextStyled>إلغاء</ButtonTextStyled>
-              </ModalButton>
-              <ModalButton primary onPress={handleSaveGoals}>
-                <ButtonTextStyled primary>حفظ</ButtonTextStyled>
-              </ModalButton>
-            </ModalButtons>
-          </ModalContainer>
-        </ModalOverlay>
-      </Modal>
 
       {/* Invite Friends Modal */}
       <Modal
@@ -1153,37 +889,6 @@ const Profile = () => {
               <InvitesSentText>عدد الدعوات المقبولة:</InvitesSentText>
               <InvitesSentNumber>{invitesAccepted}</InvitesSentNumber>
             </StatisticsSection>
-          </ModalContainer>
-        </ModalOverlay>
-      </Modal>
-
-      {/* New Badge Earned Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={!!newBadgeEarned}
-        onRequestClose={closeBadgeModal}
-      >
-        <ModalOverlay>
-          <ModalContainer>
-            {/* Confetti Animation */}
-            {newBadgeEarned && (
-              <ConfettiCannon
-                count={200}
-                origin={{ x: -10, y: 0 }}
-                fadeOut={true}
-              />
-            )}
-            {/* Congratulatory Message */}
-            <CongratulatoryText>تهانينا! 🎉</CongratulatoryText>
-            {/* Badge Image */}
-            {newBadgeEarned && <BadgeImage source={newBadgeEarned.icon} />}
-            {/* Badge Label */}
-            {newBadgeEarned && <BadgeLabel>{newBadgeEarned.label}</BadgeLabel>}
-            {/* Close Button */}
-            <ModalButton primary onPress={closeBadgeModal}>
-              <ButtonTextStyled primary>إغلاق</ButtonTextStyled>
-            </ModalButton>
           </ModalContainer>
         </ModalOverlay>
       </Modal>

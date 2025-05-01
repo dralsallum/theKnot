@@ -8,8 +8,9 @@ import {
   StatusBar,
 } from "react-native";
 import styled from "styled-components/native";
-import { publicRequest } from "../../requestMethods";
-import { useRouter } from "expo-router"; // Import the router hook
+import { publicRequest, createUserRequest } from "../../requestMethods";
+import { useRouter } from "expo-router";
+import { useSelector } from "react-redux"; // <-- IMPORT from Redux
 
 /** Example icons/images — replace with your own **/
 const EditIcon = require("../../assets/icons/edit.png");
@@ -119,8 +120,17 @@ const allCategories = [
 ];
 
 const Vendors = () => {
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
+
+  // -------------------------------
+  // Redux + Favorites logic
+  // -------------------------------
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const isAuthenticated = !!currentUser;
+  const userId = currentUser?._id || null;
+
   const [vendors, setVendors] = useState([]);
+  const [userFavorites, setUserFavorites] = useState([]); // track favorite IDs
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -129,12 +139,13 @@ const Vendors = () => {
     StatusBar.setBackgroundColor("#fdf8f2");
   }, []);
 
-  // Fetch venues (updated to specifically fetch venues category)
+  // -------------------------------
+  // Fetch venues
+  // -------------------------------
   useEffect(() => {
     const fetchVenues = async () => {
       try {
         setLoading(true);
-        // Updated to specifically request venues based on category
         const res = await publicRequest.get("/vendors?category=venue&new=true");
         setVendors(res.data);
       } catch (err) {
@@ -147,6 +158,71 @@ const Vendors = () => {
     fetchVenues();
   }, []);
 
+  // -------------------------------
+  // Fetch user favorites (if logged in)
+  // -------------------------------
+  useEffect(() => {
+    const fetchUserFavorites = async () => {
+      if (!isAuthenticated || !userId) return;
+
+      try {
+        const userReq = createUserRequest(); // properly handles token
+        const response = await userReq.get(`/users/${userId}/favorites`);
+        if (Array.isArray(response.data)) {
+          // If the API returns an array of vendor docs, we can map them to IDs
+          const favoriteIds = response.data.map((fav) =>
+            fav._id ? fav._id : fav
+          );
+          setUserFavorites(favoriteIds);
+        }
+      } catch (err) {
+        console.log("Error fetching user favorites:", err);
+      }
+    };
+    fetchUserFavorites();
+  }, [isAuthenticated, userId]);
+
+  // -------------------------------
+  // Check if vendor is favorite
+  // -------------------------------
+  const isVendorFavorite = (vendorId) => {
+    return userFavorites.includes(vendorId);
+  };
+
+  // -------------------------------
+  // Toggle favorite
+  // -------------------------------
+  const toggleFavorite = async (vendorId) => {
+    if (!isAuthenticated) {
+      // If user not logged in, prompt or route to sign-in
+      // Could also show an Alert here
+      router.push("/sign-in");
+      return;
+    }
+
+    try {
+      const userReq = createUserRequest();
+      const currentlyFavorite = isVendorFavorite(vendorId);
+
+      // Optimistic UI update
+      if (currentlyFavorite) {
+        setUserFavorites((prev) => prev.filter((id) => id !== vendorId));
+        await userReq.delete(`/users/${userId}/favorites/${vendorId}`);
+      } else {
+        setUserFavorites((prev) => [...prev, vendorId]);
+        await userReq.post(`/users/${userId}/favorites`, { vendorId });
+      }
+    } catch (err) {
+      console.log("Error toggling favorite:", err);
+      // Revert UI if error
+      if (isVendorFavorite(vendorId)) {
+        setUserFavorites((prev) => prev.filter((id) => id !== vendorId));
+      } else {
+        setUserFavorites((prev) => [...prev, vendorId]);
+      }
+    }
+  };
+
   const navigateToVendorDetails = (vendorId) => {
     router.push({
       pathname: "/booking",
@@ -154,11 +230,14 @@ const Vendors = () => {
     });
   };
 
+  // Press "Saved" summary box -> go to "/favorite"
+  const navigateToSaved = () => {
+    router.push("/favorite");
+  };
+
   // Updated navigateToCategory function
   const navigateToCategory = (category, categoryId = null) => {
     const id = categoryId || "default";
-
-    // Normalize the category name to lowercase for consistency in routing
     const normalizedCategory = category.toLowerCase().trim();
 
     router.push({
@@ -171,12 +250,10 @@ const Vendors = () => {
   };
 
   // Helper function to get the first image from a vendor's images array
-  // or return a default placeholder image if no images exist
   const getVendorImage = (vendor) => {
     if (vendor.images && vendor.images.length > 0) {
       return { uri: vendor.images[0] };
     } else {
-      // Return a default placeholder image
       return ExampleVenueImg1;
     }
   };
@@ -198,12 +275,7 @@ const Vendors = () => {
           </SubTitleContainer>
         </HeaderContainer>
 
-        {/* 
-          ***** SINGLE WRAPPER for Search + Summary *****
-          This matches the screenshot, ensuring 
-          both the search bar + summary boxes 
-          appear in one container with no gap.
-        */}
+        {/* SINGLE WRAPPER for Search + Summary */}
         <SearchAndSummaryWrapper>
           {/* Search Bar */}
           <SearchBarContainer>
@@ -216,11 +288,12 @@ const Vendors = () => {
 
           {/* Summary Boxes Row */}
           <SummaryBoxesContainer>
-            <SummaryBox>
+            <SummaryBox onPress={navigateToSaved}>
               <SummaryBoxTitle>Saved</SummaryBoxTitle>
               <SummaryBoxDescRow>
                 <HeartIconImg source={HeartIcon} />
-                <SummaryBoxDesc>0 vendors</SummaryBoxDesc>
+                {/* Show how many vendors are saved */}
+                <SummaryBoxDesc>{userFavorites.length} vendors</SummaryBoxDesc>
               </SummaryBoxDescRow>
             </SummaryBox>
 
@@ -234,7 +307,6 @@ const Vendors = () => {
           </SummaryBoxesContainer>
         </SearchAndSummaryWrapper>
 
-        {/* Switch to white background below */}
         <WhiteSection>
           {/* Blue Info Block */}
           <InfoBlock>
@@ -263,6 +335,25 @@ const Vendors = () => {
                     key={vendor._id}
                     onPress={() => navigateToVendorDetails(vendor._id)}
                   >
+                    {/* Heart Icon Overlay to toggle favorite */}
+                    <HeartIconOverlay
+                      onPress={(e) => {
+                        e.stopPropagation(); // Prevent card press
+                        toggleFavorite(vendor._id);
+                      }}
+                    >
+                      <VendorHeartIcon
+                        source={HeartIcon}
+                        resizeMode="contain"
+                        // Tint the icon if it's in favorites
+                        style={{
+                          tintColor: isVendorFavorite(vendor._id)
+                            ? "#e066a6"
+                            : "#000",
+                        }}
+                      />
+                    </HeartIconOverlay>
+
                     <VenueImage
                       source={getVendorImage(vendor)}
                       resizeMode="cover"
@@ -276,7 +367,6 @@ const Vendors = () => {
                       <VenueExtra>
                         {vendor.guestRange || "N/A"} • {vendor.priceRange}
                       </VenueExtra>
-                      {/* If vendor has tags or badges, map them, else skip */}
                       {vendor.badges?.map((badge) => (
                         <Badge key={badge}>{badge}</Badge>
                       ))}
@@ -286,7 +376,7 @@ const Vendors = () => {
             </CardScroll>
           </InfoBlock>
 
-          {/* Updated to navigate to venues category */}
+          {/* Explore venues button */}
           <ExploreButton onPress={() => navigateToCategory("venues")}>
             <ExploreButtonText>Explore venues</ExploreButtonText>
           </ExploreButton>
@@ -407,46 +497,6 @@ const ErrorText = styled.Text`
   color: red;
 `;
 
-// For the Modal
-const ModalOverlay = styled.View`
-  flex: 1;
-  background-color: rgba(0, 0, 0, 0.5);
-  justify-content: center;
-  align-items: center;
-`;
-
-const ModalContent = styled.View`
-  width: 80%;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  align-items: center;
-`;
-
-const ModalTitle = styled.Text`
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 8px;
-`;
-
-const ModalText = styled.Text`
-  font-size: 14px;
-  margin-bottom: 4px;
-`;
-
-const CloseButton = styled.TouchableOpacity`
-  background-color: #ec4899;
-  padding: 10px 16px;
-  border-radius: 8px;
-  margin-top: 14px;
-`;
-
-const CloseButtonText = styled.Text`
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-`;
-
 /* ---------- Header (Vendors title, location, etc.) --------- */
 const HeaderContainer = styled.View`
   padding: 20px;
@@ -493,17 +543,17 @@ const EditIconImg = styled.Image`
 
 const SearchAndSummaryWrapper = styled.View`
   background-color: #fdf8f2;
-  padding: 0 20px 20px; /* Horizontal + bottom padding */
+  padding: 0 20px 20px;
 `;
 
-/* Search Bar (white inside #fdf8f2) */
+/* Search Bar */
 const SearchBarContainer = styled.View`
   background-color: #fff;
   border-radius: 8px;
   flex-direction: row;
   align-items: center;
   padding: 10px 12px;
-  margin-bottom: 16px; /* space between search and summary boxes */
+  margin-bottom: 16px;
 `;
 
 const SearchIconImg = styled.Image`
@@ -525,11 +575,11 @@ const SummaryBoxesContainer = styled.View`
   justify-content: space-between;
 `;
 
-const SummaryBox = styled.View`
+const SummaryBox = styled.TouchableOpacity`
   background-color: #fff;
   border-radius: 8px;
   flex: 1;
-  margin-right: 10px; /* space between boxes */
+  margin-right: 10px;
   padding: 16px;
 
   &:last-child {
@@ -568,7 +618,6 @@ const SummaryBoxDesc = styled.Text`
   color: #333;
 `;
 
-/* Everything below is white background */
 const WhiteSection = styled.View`
   background-color: #fff;
 `;
@@ -595,18 +644,6 @@ const InfoBlockSubtitle = styled.Text`
 `;
 
 const CardScroll = styled.ScrollView``;
-
-// Modified to use TouchableOpacity for navigation
-const TouchableVenueCard = styled.TouchableOpacity`
-  width: 220px;
-  background-color: #fff;
-  border-radius: 8px;
-  margin-right: 16px;
-  shadow-color: #000;
-  shadow-opacity: 0.03;
-  shadow-radius: 3px;
-  elevation: 3;
-`;
 
 const VenueImage = styled.Image`
   width: 100%;
@@ -655,7 +692,6 @@ const Badge = styled.Text`
   align-self: flex-start;
 `;
 
-/* Pink "Explore venues" button */
 const ExploreButton = styled.TouchableOpacity`
   background-color: #ff69b4;
   padding: 14px 20px;
@@ -830,7 +866,6 @@ const TwoColumnLabel = styled.Text`
   padding: 8px 0;
 `;
 
-/* Explore all categories list */
 const ExploreAllCategoriesTitle = styled.Text`
   font-size: 18px;
   font-weight: 700;
@@ -870,4 +905,28 @@ const ImageCreditsLink = styled.Text`
   color: #0066cc;
   text-align: center;
   margin-bottom: 20px;
+`;
+
+const TouchableVenueCard = styled.TouchableOpacity`
+  width: 220px;
+  background-color: #fff;
+  border-radius: 8px;
+  margin-right: 16px;
+  shadow-color: #000;
+  shadow-opacity: 0.03;
+  shadow-radius: 3px;
+  elevation: 3;
+  position: relative;
+`;
+
+const HeartIconOverlay = styled.TouchableOpacity`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+`;
+
+const VendorHeartIcon = styled.Image`
+  width: 24px;
+  height: 24px;
 `;

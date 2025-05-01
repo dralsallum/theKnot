@@ -10,11 +10,7 @@ import LottieView from "lottie-react-native";
 const Index = () => {
   // Local state for any loading you may do
   const [isLoading, setIsLoading] = useState(false);
-
-  // 1) Grab the user from Redux
   const { currentUser } = useSelector(userSelector);
-
-  // 2) If logged in, redirect immediately
   if (currentUser) {
     return <Redirect href="home" />;
   }

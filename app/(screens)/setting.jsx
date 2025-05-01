@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import {
   ScrollView,
   TouchableOpacity,
@@ -8,8 +7,15 @@ import {
   Text,
   Image,
   Platform,
+  StatusBar,
 } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import styled from "styled-components/native";
 import * as Linking from "expo-linking";
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import * as Notifications from "expo-notifications";
+import axios from "axios";
 
 import {
   userSelector,
@@ -17,48 +23,62 @@ import {
   deleteUser,
   signOut,
 } from "../redux/authSlice";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import styled from "styled-components/native";
-import StreakIcon from "../../assets/icons/fire.png";
-import * as Notifications from "expo-notifications";
-import axios from "axios";
 
-// Styled components
-const Container = styled.SafeAreaView`
+// Define status bar height similar to the Category page
+const STATUSBAR_HEIGHT =
+  Platform.OS === "ios" ? 44 : StatusBar.currentHeight + 15;
+
+// ---------- STYLED COMPONENTS ----------
+
+// Main container with a white background for a clean look
+const Container = styled.View`
   flex: 1;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
 `;
 
-const Header = styled.View`
-  background-color: #4b7bec;
-  padding: 20px;
+// Header bar similar to your Category page with a light background
+const HeaderBar = styled.View`
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  padding-horizontal: 16px;
+  padding-top: ${STATUSBAR_HEIGHT}px;
+  padding-bottom: 16px;
+  background-color: #fdf8f2;
 `;
 
-const HeaderTitle = styled.Text`
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
-  flex: 1;
-`;
-
+// Back button styled as a simple touchable area
 const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  right: 10px;
-  top: 20px;
   padding: 10px;
 `;
 
-const ProfileContainer = styled.View`
-  background-color: white;
-  padding: 20px;
-  align-items: center;
-  margin-bottom: 10px;
+// Centered header title in bold dark text
+const HeaderTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
 `;
 
+// A placeholder view to balance the header layout
+const HeaderPlaceholder = styled.View`
+  width: 40px;
+`;
+
+// Profile card styling with subtle shadow and rounded corners
+const ProfileContainer = styled.View`
+  background-color: white;
+  margin: 15px;
+  border-radius: 10px;
+  padding: 20px;
+  align-items: center;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.1;
+  shadow-radius: 3px;
+  elevation: 3;
+`;
+
+// Profile image styled as a circle
 const ProfileImage = styled.Image`
   width: 90px;
   height: 90px;
@@ -66,12 +86,15 @@ const ProfileImage = styled.Image`
   margin-bottom: 15px;
 `;
 
+// Bold profile text (username)
 const ProfileText = styled.Text`
-  font-size: 18px;
+  font-size: 22px;
   margin-bottom: 5px;
   font-weight: bold;
+  color: #000;
 `;
 
+// Subtext for email and additional info
 const SubText = styled.Text`
   font-size: 14px;
   color: #666;
@@ -79,35 +102,43 @@ const SubText = styled.Text`
   margin-top: 5px;
 `;
 
+// Section header with clear margins for each section grouping
 const SectionHeader = styled.Text`
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   color: #333;
-  padding: 10px 15px;
-  background-color: #f2f2f2;
-  text-align: left;
+  margin: 15px;
+  padding-horizontal: 10px;
 `;
 
+// Option container styled as a card with rounded corners and subtle shadow
 const OptionContainer = styled.View`
   background-color: white;
   padding: 15px;
-  border-bottom-width: 1px;
-  border-bottom-color: #e6e6e6;
+  margin: 0 15px 10px;
+  border-radius: 8px;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.1;
+  shadow-radius: 3px;
+  elevation: 2;
 `;
 
+// Row layout for options
 const OptionRow = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
 `;
 
+// Option text styling
 const OptionText = styled.Text`
   font-size: 16px;
   color: #333;
-  text-align: left;
   flex: 1;
 `;
 
+// Input field for editing options
 const InputField = styled.TextInput`
   border-width: ${(props) => (props.isEditing ? "1px" : "0px")};
   border-color: #ddd;
@@ -120,21 +151,24 @@ const InputField = styled.TextInput`
   text-align: right;
 `;
 
-const UpdateButton = styled.TouchableOpacity`
-  background-color: #4b7bec;
+// Button styled with your accent color for primary actions
+const Button = styled.TouchableOpacity`
+  background-color: #e066a6;
   padding: 10px;
   border-radius: 8px;
   align-items: center;
-  margin-top: 10px;
+  margin: 10px;
 `;
 
+// Text styling for buttons
 const ButtonText = styled.Text`
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
 `;
 
-const DeleteButton = styled.TouchableOpacity`
+// Danger button (e.g., delete) using a red background
+const DangerButton = styled.TouchableOpacity`
   background-color: #ff3b30;
   padding: 12px;
   border-radius: 8px;
@@ -142,6 +176,7 @@ const DeleteButton = styled.TouchableOpacity`
   margin: 20px 15px;
 `;
 
+// Modal container styling for overlay
 const ModalContainer = styled.View`
   flex: 1;
   justify-content: center;
@@ -149,6 +184,7 @@ const ModalContainer = styled.View`
   background-color: rgba(0, 0, 0, 0.5);
 `;
 
+// Modal content styled as a card
 const ModalContent = styled.View`
   width: 80%;
   background-color: white;
@@ -157,6 +193,7 @@ const ModalContent = styled.View`
   align-items: center;
 `;
 
+// Grouping for modal buttons
 const ButtonGroup = styled.View`
   flex-direction: row;
   justify-content: space-between;
@@ -164,7 +201,8 @@ const ButtonGroup = styled.View`
   margin-top: 20px;
 `;
 
-const NotificationButton = styled(UpdateButton)`
+// Notification buttons reusing the primary Button style with slight adjustments
+const NotificationButton = styled(Button)`
   flex: 1;
   margin-horizontal: 5px;
 `;
@@ -177,7 +215,6 @@ const SettingsPage = () => {
   const [country, setCountry] = useState(currentUser?.country || "");
   const [city, setCity] = useState(currentUser?.city || "");
   const [language, setLanguage] = useState(currentUser?.language || "");
-
   const [isEditingCountry, setIsEditingCountry] = useState(false);
   const [isEditingCity, setIsEditingCity] = useState(false);
   const [isEditingLanguage, setIsEditingLanguage] = useState(false);
@@ -190,12 +227,9 @@ const SettingsPage = () => {
 
   const handleOptInNotifications = async () => {
     try {
-      // Check existing permissions
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
-
-      // If permissions are not granted or are undetermined, request them
       if (existingStatus !== "granted") {
         const { status } = await Notifications.requestPermissionsAsync({
           ios: {
@@ -208,7 +242,6 @@ const SettingsPage = () => {
         });
         finalStatus = status;
       }
-
       if (finalStatus !== "granted") {
         Alert.alert(
           "الإشعارات معطلة",
@@ -221,7 +254,6 @@ const SettingsPage = () => {
             {
               text: "فتح الإعدادات",
               onPress: () => {
-                // Open app settings
                 if (Platform.OS === "ios") {
                   Linking.openURL("app-settings:");
                 } else {
@@ -233,17 +265,11 @@ const SettingsPage = () => {
         );
         return;
       }
-
-      // Permissions granted, proceed to get the token
       const tokenData = await Notifications.getExpoPushTokenAsync();
       const expoPushToken = tokenData.data;
-
-      // Send the expoPushToken to the backend
       if (currentUser && currentUser._id && currentUser.accessToken) {
         const userId = currentUser._id;
         const accessToken = currentUser.accessToken;
-
-        // Make an API call to update the user's profile with the expoPushToken
         await axios.put(
           `https://quizeng-022517ad949b.herokuapp.com/api/users/profile/${userId}`,
           { expoPushToken },
@@ -253,10 +279,7 @@ const SettingsPage = () => {
             },
           }
         );
-
-        // Update the user in Redux
         dispatch(updateUserProfile({ userId, updates: { expoPushToken } }));
-
         Alert.alert("تم", "تم تفعيل الإشعارات بنجاح.");
       } else {
         console.error("Current user is not defined.");
@@ -271,16 +294,15 @@ const SettingsPage = () => {
       setNotificationModalVisible(false);
     }
   };
+
   const handleOptOutNotifications = () => {
     setNotificationModalVisible(false);
   };
+
   const handleUpdateCountry = () => {
     if (currentUser && currentUser._id) {
       dispatch(
-        updateUserProfile({
-          userId: currentUser._id,
-          updates: { country },
-        })
+        updateUserProfile({ userId: currentUser._id, updates: { country } })
       );
       setIsEditingCountry(false);
     }
@@ -289,34 +311,20 @@ const SettingsPage = () => {
   const handleUpdateCity = () => {
     if (currentUser && currentUser._id) {
       dispatch(
-        updateUserProfile({
-          userId: currentUser._id,
-          updates: { city },
-        })
+        updateUserProfile({ userId: currentUser._id, updates: { city } })
       );
       setIsEditingCity(false);
     }
   };
 
-  const handleEditCountry = () => {
-    setIsEditingCountry(true);
-  };
-
-  const handleEditCity = () => {
-    setIsEditingCity(true);
-  };
-
-  const handleEditLanguage = () => {
-    setIsEditingLanguage(true);
-  };
+  const handleEditCountry = () => setIsEditingCountry(true);
+  const handleEditCity = () => setIsEditingCity(true);
+  const handleEditLanguage = () => setIsEditingLanguage(true);
 
   const handleUpdateLanguage = () => {
     if (currentUser && currentUser._id) {
       dispatch(
-        updateUserProfile({
-          userId: currentUser._id,
-          updates: { language },
-        })
+        updateUserProfile({ userId: currentUser._id, updates: { language } })
       );
       setIsEditingLanguage(false);
     }
@@ -327,10 +335,7 @@ const SettingsPage = () => {
       "تأكيد الحذف",
       "هل أنت متأكد أنك تريد حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء.",
       [
-        {
-          text: "إلغاء",
-          style: "cancel",
-        },
+        { text: "إلغاء", style: "cancel" },
         {
           text: "حذف",
           style: "destructive",
@@ -338,7 +343,7 @@ const SettingsPage = () => {
             if (currentUser && currentUser._id) {
               dispatch(deleteUser({ userId: currentUser._id })).then(() => {
                 dispatch(signOut());
-                router.push("/login");
+                router.push("/sign-in");
               });
             }
           },
@@ -348,21 +353,29 @@ const SettingsPage = () => {
     );
   };
 
+  const handleSignOut = () => {
+    dispatch(signOut());
+    router.push("/sign-in");
+  };
+
   const handleBackPress = () => {
     router.back();
   };
 
   return (
     <Container>
-      <Header>
-        <HeaderTitle>الإعدادات</HeaderTitle>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
+      <HeaderBar>
         <BackButton onPress={handleBackPress}>
-          <Image
-            source={require("../../assets/icons/forword.png")}
-            style={{ width: 24, height: 24 }}
-          />
+          <Feather name="arrow-left" size={24} color="#000" />
         </BackButton>
-      </Header>
+        <HeaderTitle>الإعدادات</HeaderTitle>
+        <HeaderPlaceholder />
+      </HeaderBar>
 
       <ScrollView>
         <ProfileContainer>
@@ -374,15 +387,13 @@ const SettingsPage = () => {
 
         <SectionHeader>حسابي</SectionHeader>
 
-        {/* Display Streak */}
-
-        {/* البلد */}
+        {/* Country Option */}
         <OptionContainer>
           <OptionRow>
             <OptionText>البلد</OptionText>
             {!isEditingCountry && (
               <TouchableOpacity onPress={handleEditCountry}>
-                <Ionicons name="create-outline" size={20} color="#4b7bec" />
+                <Feather name="edit-2" size={20} color="#e066a6" />
               </TouchableOpacity>
             )}
           </OptionRow>
@@ -391,25 +402,25 @@ const SettingsPage = () => {
               <InputField
                 placeholder="أدخل البلد"
                 value={country}
-                onChangeText={(text) => setCountry(text)}
+                onChangeText={setCountry}
                 isEditing={isEditingCountry}
               />
-              <UpdateButton onPress={handleUpdateCountry}>
+              <Button onPress={handleUpdateCountry}>
                 <ButtonText>تحديث البلد</ButtonText>
-              </UpdateButton>
+              </Button>
             </>
           ) : (
             <OptionText style={{ marginTop: 5 }}>{country || "--"}</OptionText>
           )}
         </OptionContainer>
 
-        {/* المدينة */}
+        {/* City Option */}
         <OptionContainer>
           <OptionRow>
             <OptionText>المدينة</OptionText>
             {!isEditingCity && (
               <TouchableOpacity onPress={handleEditCity}>
-                <Ionicons name="create-outline" size={20} color="#4b7bec" />
+                <Feather name="edit-2" size={20} color="#e066a6" />
               </TouchableOpacity>
             )}
           </OptionRow>
@@ -418,25 +429,25 @@ const SettingsPage = () => {
               <InputField
                 placeholder="أدخل المدينة"
                 value={city}
-                onChangeText={(text) => setCity(text)}
+                onChangeText={setCity}
                 isEditing={isEditingCity}
               />
-              <UpdateButton onPress={handleUpdateCity}>
+              <Button onPress={handleUpdateCity}>
                 <ButtonText>تحديث المدينة</ButtonText>
-              </UpdateButton>
+              </Button>
             </>
           ) : (
             <OptionText style={{ marginTop: 5 }}>{city || "--"}</OptionText>
           )}
         </OptionContainer>
 
-        {/* أنا أتحدث */}
+        {/* Language Option */}
         <OptionContainer>
           <OptionRow>
             <OptionText>أنا أتحدث</OptionText>
             {!isEditingLanguage && (
               <TouchableOpacity onPress={handleEditLanguage}>
-                <Ionicons name="create-outline" size={20} color="#4b7bec" />
+                <Feather name="edit-2" size={20} color="#e066a6" />
               </TouchableOpacity>
             )}
           </OptionRow>
@@ -445,38 +456,44 @@ const SettingsPage = () => {
               <InputField
                 placeholder="أدخل اللغة"
                 value={language}
-                onChangeText={(text) => setLanguage(text)}
+                onChangeText={setLanguage}
                 isEditing={isEditingLanguage}
               />
-              <UpdateButton onPress={handleUpdateLanguage}>
+              <Button onPress={handleUpdateLanguage}>
                 <ButtonText>تحديث اللغة</ButtonText>
-              </UpdateButton>
+              </Button>
             </>
           ) : (
             <OptionText style={{ marginTop: 5 }}>{language || "--"}</OptionText>
           )}
         </OptionContainer>
+
+        {/* Streak Information */}
         <OptionContainer>
           <OptionRow>
             <OptionText>
               عدد أيام الحماس: {currentUser?.streak?.count ?? 0}
             </OptionText>
             <Image
-              source={StreakIcon}
+              source={require("../../assets/icons/fire.png")}
               style={{ width: 24, height: 24, marginRight: 8 }}
             />
           </OptionRow>
         </OptionContainer>
 
         <SectionHeader>عام</SectionHeader>
+
+        {/* Notifications Option */}
         <TouchableOpacity onPress={handleToggleNotifications}>
           <OptionContainer>
             <OptionRow>
               <OptionText>الإشعارات</OptionText>
-              <Ionicons name="notifications" size={20} color="#4b7bec" />
+              <Feather name="bell" size={20} color="#e066a6" />
             </OptionRow>
           </OptionContainer>
         </TouchableOpacity>
+
+        {/* Display Language Option */}
         <OptionContainer>
           <OptionRow>
             <OptionText>لغة العرض</OptionText>
@@ -484,10 +501,15 @@ const SettingsPage = () => {
           </OptionRow>
         </OptionContainer>
 
-        <DeleteButton onPress={handleDeleteAccount}>
+        <DangerButton onPress={handleDeleteAccount}>
           <ButtonText>حذف الحساب</ButtonText>
-        </DeleteButton>
+        </DangerButton>
+
+        <Button onPress={handleSignOut}>
+          <ButtonText>تسجيل الخروج</ButtonText>
+        </Button>
       </ScrollView>
+
       <Modal
         transparent={true}
         animationType="slide"
