@@ -2,6 +2,7 @@ import React from "react";
 import { StatusBar, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 import { useNavigation } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
 
 const Notification = () => {
   const navigation = useNavigation();
@@ -16,9 +17,11 @@ const Notification = () => {
       <Container>
         <HeaderContainer>
           <BackButtonContainer onPress={handleBack}>
-            <BackArrow>←</BackArrow>
+            <BackArrow>
+              <Feather name="arrow-right" size={24} color="#000" />
+            </BackArrow>
           </BackButtonContainer>
-          <HeaderText>Notifications</HeaderText>
+          <HeaderText>الإشعارات</HeaderText>
         </HeaderContainer>
 
         <ContentContainer>
@@ -30,9 +33,9 @@ const Notification = () => {
                 <Dot />
               </DotContainer>
             </MessageBubble>
-            <NoNotificationsText>No notifications yet!</NoNotificationsText>
+            <NoNotificationsText>لا توجد إشعارات حتى الآن!</NoNotificationsText>
             <DescriptionText>
-              We'll put helpful tips and to-dos here when you need them.
+              سنضع هنا نصائح ومهام مفيدة عندما تحتاج إليها.
             </DescriptionText>
           </EmptyStateContainer>
         </ContentContainer>
@@ -53,11 +56,11 @@ const HeaderContainer = styled.View`
   padding-bottom: 10px;
   flex-direction: row;
   align-items: center;
+  direction: rtl;
 `;
 
 const BackButtonContainer = styled.TouchableOpacity`
   padding: 10px;
-  margin-right: 10px;
 `;
 
 const BackArrow = styled.Text`
@@ -70,6 +73,7 @@ const HeaderText = styled.Text`
   font-size: 32px;
   font-weight: bold;
   color: #000;
+  text-algin: left;
 `;
 
 const ContentContainer = styled.View`

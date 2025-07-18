@@ -12,24 +12,24 @@ export default function PlanningScreen() {
           <CircleButton
             route="/budget"
             icon={<FontAwesome name="dollar" size={24} color="white" />}
-            label="Budget Advisor"
+            label="مستشار الميزانية"
           />
           <CircleButton
             route="/checklist"
             style={{ marginTop: -30 }}
             icon={<MaterialIcons name="list-alt" size={24} color="white" />}
-            label="Checklist"
+            label="المهام"
           />
           <CircleButton
             route="/guest"
             style={{ marginTop: -30 }}
             icon={<Ionicons name="people" size={24} color="white" />}
-            label="Guest List"
+            label="قائمة المهام"
           />
           <CircleButton
             route="/favorite"
             icon={<Ionicons name="heart" size={24} color="white" />}
-            label="Your Vision"
+            label="المفضلة"
           />
         </OuterCircleRow>
       </IconsContainer>

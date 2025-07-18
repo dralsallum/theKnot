@@ -20,6 +20,7 @@ import * as Notifications from "expo-notifications";
 import * as WebBrowser from "expo-web-browser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNotification } from "../redux/NotificationContext";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export const SafeArea = styled.SafeAreaView`
   flex: 1;
@@ -140,6 +141,24 @@ const Input = styled.TextInput`
   font-size: 16px;
 `;
 
+const DatePickerButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  padding: 12px;
+  background-color: #f9f9f9;
+  min-height: 40px;
+`;
+
+const DatePickerText = styled.Text`
+  flex: 1;
+  margin-left: 10px;
+  font-size: 16px;
+  color: ${({ hasDate }) => (hasDate ? "#333" : "#888")};
+`;
+
 const ErrorText = styled.Text`
   color: red;
   margin-bottom: 10px;
@@ -191,22 +210,36 @@ const CheckBoxText = styled.Text`
   color: #333;
 `;
 
-// Updated Onboarding Questions with Notification Prompt Before Sign-Up
+const InputFormContainer = styled.View`
+  width: 100%;
+  padding: 20px 0;
+  align-items: center;
+  justify-content: center;
+`;
+const OptionalText = styled.Text`
+  font-size: 14px;
+  color: #6c757d;
+  font-family: "Cairo-Regular";
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+`;
+
 const questions = [
   {
     question: "حدد هدفك اليومي للدراسة",
     subText:
-      "اختر المدة الزمنية التي يمكنك تخصيصها يوميًا لتعلم اللغة الإنجليزية.",
+      "اختر المدة الزمنية التي يمكنك تخصيصها يوميًا لتعلم اساسيات الزواج.",
     options: [
       { text: "5 دقائق/يوم", icon: require("../../assets/icons/clock.png") },
       { text: "10 دقائق/يوم", icon: require("../../assets/icons/clock.png") },
       { text: "15 دقيقة/يوم", icon: require("../../assets/icons/clock.png") },
       { text: "20 دقيقة/يوم", icon: require("../../assets/icons/clock.png") },
     ],
-    image: require("../../assets/images/goal.png"),
+    image: require("../../assets/icons/challenge.png"),
   },
   {
-    question: "لماذا تتعلم اللغة الإنجليزية؟",
+    question: "لماذا تريد الزواج؟",
     subText: "اختر السبب الذي يصف دافعك بشكل أفضل.",
     options: [
       {
@@ -225,16 +258,83 @@ const questions = [
     ],
   },
   {
-    question: "مرحبًا، كم تعرف من اللغة الإنجليزية؟",
-    subText: "حدد مستوى إتقانك الحالي للغة الإنجليزية.",
+    question: "مرحبًا، كم تعرف عن الزواج؟",
+    subText: "حدد مستوى إتقانك الحالي للزواج.",
     options: [
       { text: "أنا مبتدئ", icon: require("../../assets/icons/beginner.png") },
       {
-        text: "لدي بعض المعرفة بالإنجليزي، أريد تحديد مستواي بالبداية!",
+        text: "لدي بعض المعرفة بالزواج أريد تحديد مستواي بالبداية!",
         icon: require("../../assets/icons/expert.png"),
       },
     ],
-    image: require("../../assets/images/goal.png"),
+    image: require("../../assets/icons/challenge.png"),
+  },
+  // New input-oriented questions
+  {
+    question: "ما اسمك الاول؟",
+    subText: "أدخل اسمك الاول لنتمكن من مساعدتك بشكل شخصي",
+    isInput: true,
+    inputType: "text",
+    inputPlaceholder: "اسمك الاول",
+    inputKey: "firstName",
+    icon: require("../../assets/icons/challenge.png"),
+  },
+  {
+    question: "كم عمرك؟",
+    subText: "هذا يساعدنا في تقديم نصائح مناسبة لمرحلتك العمرية",
+    isInput: true,
+    inputType: "numeric",
+    inputPlaceholder: "العمر",
+    inputKey: "age",
+    icon: require("../../assets/icons/challenge.png"),
+  },
+  {
+    question: "ما اسم شريك/شريكة حياتك؟",
+    subText: "اسم الشخص الذي ستتزوج منه (اختياري)",
+    isInput: true,
+    inputType: "text",
+    inputPlaceholder: "اسم الشريك",
+    inputKey: "partnerName",
+    isOptional: true,
+    icon: require("../../assets/icons/heart.png"),
+  },
+  {
+    question: "متى موعد الزفاف؟",
+    subText: "اختر التاريخ المخطط للزفاف",
+    isDatePicker: true,
+    inputKey: "weddingDate",
+    isOptional: true,
+    icon: require("../../assets/icons/calendar.png"),
+  },
+  {
+    question: "أين سيقام حفل الزفاف؟",
+    subText: "اختر الدولة التي سيقام فيها حفل الزفاف (اختياري)",
+    isInput: true,
+    inputType: "text",
+    inputPlaceholder: "دولة إقامة الزفاف",
+    inputKey: "weddingCountry",
+    isOptional: true,
+    icon: require("../../assets/icons/location.png"),
+  },
+  {
+    question: "في أي مدينة سيقام الزفاف؟",
+    subText: "اختر المدينة التي سيقام فيها حفل الزفاف (اختياري)",
+    isInput: true,
+    inputType: "text",
+    inputPlaceholder: "مدينة إقامة الزفاف",
+    inputKey: "weddingCity",
+    isOptional: true,
+    icon: require("../../assets/icons/challenge.png"),
+  },
+  {
+    question: "ما موقع أو مكان حفل الزفاف المحدد؟",
+    subText: "اسم القاعة أو المكان المحدد للحفل (اختياري)",
+    isInput: true,
+    inputType: "text",
+    inputPlaceholder: "موقع الزفاف",
+    inputKey: "weddingLocation",
+    isOptional: true,
+    icon: require("../../assets/icons/venue.png"),
   },
   // Moved Notification Prompt Before Sign-Up
   {
@@ -260,7 +360,18 @@ const Onboarding = () => {
     email: "",
     password: "",
     mailchimpOptIn: true,
+    // New input fields
+    firstName: "",
+    age: "",
+    partnerName: "",
+    weddingDate: "",
+    weddingCountry: "",
+    weddingCity: "",
+    weddingLocation: "",
   });
+  const [currentInputValue, setCurrentInputValue] = useState("");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -294,8 +405,68 @@ const Onboarding = () => {
     setInputs((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleCurrentInputChange = (value) => {
+    setCurrentInputValue(value);
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || new Date();
+    setShowDatePicker(Platform.OS === "ios");
+    setSelectedDate(currentDate);
+
+    // Format the date as a string for storage
+    const formattedDate = currentDate.toISOString().split("T")[0];
+    handleInputChange("weddingDate", formattedDate);
+  };
+
+  const showDatePickerModal = () => {
+    setShowDatePicker(true);
+  };
+
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ar-SA", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   const handleContinue = async () => {
     const currentQuestion = questions[currentQuestionIndex];
+
+    if (currentQuestion.isDatePicker) {
+      // Handle date picker questions
+      if (!currentQuestion.isOptional && !inputs.weddingDate) {
+        Alert.alert("حقل مطلوب", "يرجى اختيار التاريخ للمتابعة.");
+        return;
+      }
+
+      // Move to next question
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      }
+      return;
+    }
+
+    if (currentQuestion.isInput) {
+      // Handle input questions
+      if (!currentQuestion.isOptional && !currentInputValue.trim()) {
+        Alert.alert("حقل مطلوب", "يرجى ملء هذا الحقل للمتابعة.");
+        return;
+      }
+
+      // Save the input value
+      handleInputChange(currentQuestion.inputKey, currentInputValue);
+
+      // Move to next question
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setCurrentInputValue("");
+      }
+      return;
+    }
 
     if (currentQuestion.isNotificationPrompt) {
       await requestNotifications();
@@ -311,10 +482,12 @@ const Onboarding = () => {
         return;
       }
 
-      // Include expoPushToken in the registration data
+      // Include expoPushToken and additional user data in the registration data
       const registrationData = {
         ...inputs,
-        expoPushToken: expoPushToken || null, // Handle cases where token might not be available
+        expoPushToken: expoPushToken || null,
+
+        username: inputs.username || inputs.firstName,
       };
 
       // Dispatch the register action
@@ -326,12 +499,9 @@ const Onboarding = () => {
           const storedAccounts = await AsyncStorage.getItem("savedAccounts");
           let parsedAccounts = storedAccounts ? JSON.parse(storedAccounts) : [];
 
-          // Capitalize the first letter of the username
-          const capitalizeFirstLetter = (text) => {
-            if (!text) return "";
-            return text.charAt(0).toUpperCase() + text.slice(1);
-          };
-          const newUsername = capitalizeFirstLetter(inputs.username);
+          const newUsername = capitalizeFirstLetter(
+            inputs.username || inputs.firstName
+          );
 
           // Check if the username already exists
           const accountExists = parsedAccounts.some(
@@ -359,7 +529,7 @@ const Onboarding = () => {
 
         // Navigate based on needTestFirst
         if (needTestFirst) {
-          router.push("test");
+          router.push("home");
         } else {
           router.push("home");
         }
@@ -369,8 +539,8 @@ const Onboarding = () => {
         Alert.alert("فشل التسجيل", resultAction.payload || "حدث خطأ.");
       }
     } else if (selectedOptionIndex !== null) {
-      // Check if the current question is "مرحبًا، كم تعرف من اللغة الإنجليزية؟"
-      if (currentQuestion.question === "مرحبًا، كم تعرف من اللغة الإنجليزية؟") {
+      // Check if the current question is about marriage knowledge
+      if (currentQuestion.question === "مرحبًا، كم تعرف عن الزواج؟") {
         const selectedOption = currentQuestion.options[selectedOptionIndex];
         if (
           selectedOption.text ===
@@ -378,7 +548,7 @@ const Onboarding = () => {
         ) {
           setNeedTestFirst(true);
         } else {
-          setNeedTestFirst(false); // Ensure it's false if another option is selected
+          setNeedTestFirst(false);
         }
       }
 
@@ -395,6 +565,7 @@ const Onboarding = () => {
     } else {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setSelectedOptionIndex(null);
+      setCurrentInputValue("");
     }
   };
 
@@ -421,6 +592,31 @@ const Onboarding = () => {
     }
   }, [isSuccess]);
 
+  // Function to check if continue button should be enabled
+  const isContinueEnabled = () => {
+    const currentQuestion = questions[currentQuestionIndex];
+
+    if (currentQuestion.isDatePicker) {
+      return currentQuestion.isOptional || inputs.weddingDate;
+    }
+
+    if (currentQuestion.isInput) {
+      return currentQuestion.isOptional || currentInputValue.trim().length > 0;
+    }
+
+    if (currentQuestion.isSignUp) {
+      return (
+        !isFetching &&
+        termsAccepted &&
+        inputs.username &&
+        inputs.email &&
+        inputs.password
+      );
+    }
+
+    return selectedOptionIndex !== null;
+  };
+
   return (
     <SafeArea>
       <KeyboardAvoidingView
@@ -444,12 +640,77 @@ const Onboarding = () => {
             {questions[currentQuestionIndex].image && (
               <GoalImage source={questions[currentQuestionIndex].image} />
             )}
+            {questions[currentQuestionIndex].icon &&
+              !questions[currentQuestionIndex].image && (
+                <GoalImage source={questions[currentQuestionIndex].icon} />
+              )}
             <Title>{questions[currentQuestionIndex].question}</Title>
             <Subtitle>{questions[currentQuestionIndex].subText}</Subtitle>
 
-            {/* Display Options or Forms based on the current step */}
-            {!questions[currentQuestionIndex].isSignUp &&
-            !questions[currentQuestionIndex].isNotificationPrompt ? (
+            {/* Display Options, Input Forms, Date Picker, or Sign-up Form based on the current step */}
+            {questions[currentQuestionIndex].isDatePicker ? (
+              <InputFormContainer>
+                <DatePickerButton onPress={showDatePickerModal}>
+                  <Ionicons name="calendar-outline" size={20} color="#888" />
+                  <DatePickerText hasDate={!!inputs.weddingDate}>
+                    {inputs.weddingDate
+                      ? formatDateForDisplay(inputs.weddingDate)
+                      : "اختر تاريخ الزفاف"}
+                  </DatePickerText>
+                  <Ionicons name="chevron-down" size={20} color="#888" />
+                </DatePickerButton>
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={selectedDate}
+                    mode="date"
+                    is24Hour={true}
+                    display="default"
+                    onChange={handleDateChange}
+                    minimumDate={new Date()}
+                  />
+                )}
+
+                {questions[currentQuestionIndex].isOptional && (
+                  <OptionalText>
+                    هذا الحقل اختياري، يمكنك تركه فارغًا
+                  </OptionalText>
+                )}
+              </InputFormContainer>
+            ) : questions[currentQuestionIndex].isInput ? (
+              <InputFormContainer>
+                <InputContainer>
+                  <Input
+                    placeholder={
+                      questions[currentQuestionIndex].inputPlaceholder
+                    }
+                    placeholderTextColor="#888"
+                    value={currentInputValue}
+                    onChangeText={handleCurrentInputChange}
+                    keyboardType={
+                      questions[currentQuestionIndex].inputType === "numeric"
+                        ? "numeric"
+                        : questions[currentQuestionIndex].inputType === "email"
+                        ? "email-address"
+                        : "default"
+                    }
+                    autoCapitalize={
+                      questions[currentQuestionIndex].inputType === "email"
+                        ? "none"
+                        : "words"
+                    }
+                    multiline={false}
+                  />
+                </InputContainer>
+                {questions[currentQuestionIndex].isOptional && (
+                  <OptionalText>
+                    هذا الحقل اختياري، يمكنك تركه فارغًا
+                  </OptionalText>
+                )}
+              </InputFormContainer>
+            ) : !questions[currentQuestionIndex].isSignUp &&
+              !questions[currentQuestionIndex].isNotificationPrompt ? (
               <OptionsContainer>
                 {questions[currentQuestionIndex].options.map(
                   (option, index) => (
@@ -561,7 +822,7 @@ const Onboarding = () => {
             ) : (
               <NotificationContainer>
                 <Image
-                  source={require("../../assets/icons/notification.png")} // Replace with your notification icon
+                  source={require("../../assets/icons/notification.png")}
                   style={{ width: 80, height: 80, marginBottom: 20 }}
                 />
 
@@ -591,27 +852,9 @@ const Onboarding = () => {
             {!questions[currentQuestionIndex].isNotificationPrompt && (
               <ContinueButton
                 onPress={handleContinue}
-                enabled={
-                  questions[currentQuestionIndex].isSignUp
-                    ? !isFetching &&
-                      termsAccepted &&
-                      inputs.username &&
-                      inputs.email &&
-                      inputs.password
-                    : selectedOptionIndex !== null
-                }
+                enabled={isContinueEnabled()}
                 style={{
-                  opacity: questions[currentQuestionIndex].isSignUp
-                    ? !isFetching &&
-                      termsAccepted &&
-                      inputs.username &&
-                      inputs.email &&
-                      inputs.password
-                      ? 1
-                      : 0.5
-                    : selectedOptionIndex !== null
-                    ? 1
-                    : 0.5,
+                  opacity: isContinueEnabled() ? 1 : 0.5,
                 }}
               >
                 {questions[currentQuestionIndex].isSignUp ? (

@@ -26,6 +26,7 @@ const STATUSBAR_HEIGHT = Platform.OS === "ios" ? 44 : StatusBar.currentHeight;
 const Container = styled.View`
   flex: 1;
   background-color: #ffffff;
+  direction: rtl;
 `;
 
 const HeaderBar = styled.View`
@@ -52,11 +53,13 @@ const TitleText = styled.Text`
   font-size: 20px;
   font-weight: bold;
   color: #000;
+  text-align: left;
 `;
 
 const LocationText = styled.Text`
   font-size: 15px;
   color: #666;
+  text-align: left;
 `;
 
 const HeaderActionButtons = styled.View`
@@ -93,11 +96,13 @@ const PromoTitle = styled.Text`
   font-weight: 500;
   color: #b35d82;
   margin-bottom: 6px;
+  text-align: left;
 `;
 
 const PromoDescription = styled.Text`
   font-size: 16px;
   color: #333;
+  text-align: left;
 `;
 
 const PageDotsContainer = styled.View`
@@ -125,6 +130,7 @@ const LocationRow = styled.Text`
   font-size: 18px;
   color: #666;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const VendorNameRow = styled.View`
@@ -138,6 +144,7 @@ const VendorName = styled.Text`
   font-size: 26px;
   font-weight: bold;
   color: #000;
+  text-align: left;
 `;
 
 const RatingContainer = styled.View`
@@ -149,12 +156,14 @@ const RatingText = styled.Text`
   font-size: 22px;
   font-weight: bold;
   margin-left: 4px;
+  text-align: left;
 `;
 
 const ReviewCount = styled.Text`
   font-size: 18px;
   color: #666;
   margin-left: 6px;
+  text-align: left;
 `;
 
 const PriceRange = styled.Text`
@@ -162,6 +171,7 @@ const PriceRange = styled.Text`
   color: #333;
   margin-top: 8px;
   margin-bottom: 16px;
+  text-align: left;
 `;
 
 const AwardBadge = styled.View`
@@ -180,6 +190,7 @@ const AwardText = styled.Text`
   font-weight: 500;
   color: #333;
   margin-left: 8px;
+  text-align: left;
 `;
 
 const RequestQuoteButton = styled.TouchableOpacity`
@@ -195,6 +206,7 @@ const RequestQuoteText = styled.Text`
   color: white;
   font-size: 20px;
   font-weight: 600;
+  text-align: left;
 `;
 
 const SecondImage = styled.View`
@@ -225,11 +237,13 @@ const OfferAmount = styled.Text`
   font-size: 20px;
   font-weight: bold;
   color: #000;
+  text-align: left;
 `;
 
 const OfferDetails = styled.Text`
   font-size: 12px;
   color: #333;
+  text-align: left;
 `;
 
 const FavoriteButton = styled.TouchableOpacity`
@@ -244,30 +258,11 @@ const FavoriteButton = styled.TouchableOpacity`
   align-items: center;
 `;
 
-const PromoHeader = styled.View`
-  background-color: #d7eee8;
-  padding: 16px;
-  margin-top: 16px;
-`;
-
-const PromoHeaderText = styled.Text`
-  font-size: 30px;
-  font-weight: 300;
-  text-align: center;
-`;
-
-const PromoHighlight = styled.Text`
-  font-weight: bold;
-  font-size: 30px;
-`;
-
-const PageDotsSaleContainer = styled.View`
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  margin-top: 5px;
-  background-color: #d7eee8;
-  padding-bottom: 16px;
+const VendorDec = styled.Text`
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #666;
+  text-align: left;
 `;
 
 const ChatBubble = styled.View`
@@ -299,10 +294,18 @@ const ChatNotification = styled.View`
   align-items: center;
 `;
 
+const PriceCon = styled.View`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+`;
+
 const ChatNotificationText = styled.Text`
   color: white;
   font-size: 12px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const LoadingContainer = styled.View`
@@ -650,7 +653,7 @@ const Category = () => {
       {/* Header Bar */}
       <HeaderBar>
         <BackButton onPress={() => router.back()}>
-          <Feather name="arrow-left" size={24} color="#000" />
+          <Feather name="arrow-right" size={24} color="#000" />
         </BackButton>
 
         <HeaderTitle>
@@ -746,13 +749,17 @@ const Category = () => {
                   </RatingContainer>
                 </VendorNameRow>
                 {vendorItem.description && (
-                  <Text
+                  <VendorDec
                     style={{ marginBottom: 12, fontSize: 16, color: "#666" }}
                   >
                     {vendorItem.description}
-                  </Text>
+                  </VendorDec>
                 )}
-                <PriceRange>{vendorItem.priceRange}</PriceRange>
+                <PriceCon>
+                  <PriceRange>{vendorItem.prePrice} ريال</PriceRange>
+                  <Text>-</Text>
+                  <PriceRange>{vendorItem.postPrice} ريال</PriceRange>
+                </PriceCon>
                 {vendorItem.awards && vendorItem.awards.length > 0 && (
                   <AwardBadge>
                     <Feather name="award" size={18} color="#333" />
@@ -760,7 +767,7 @@ const Category = () => {
                   </AwardBadge>
                 )}
                 <RequestQuoteButton>
-                  <RequestQuoteText>Request Quote</RequestQuoteText>
+                  <RequestQuoteText>طلب عرض سعر</RequestQuoteText>
                 </RequestQuoteButton>
               </ContentContainer>
 

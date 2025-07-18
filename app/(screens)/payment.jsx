@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import Navbar from "../components/navigation/navbar";
 import * as RNIap from "react-native-iap";
 import { createUserRequest } from "../../requestMethods";
 import { useSelector, useDispatch } from "react-redux";
@@ -463,7 +462,6 @@ const Payment = () => {
 
   return (
     <SafeArea>
-      <Navbar />
       <ScrollView>
         <Container>
           <TopTe>ابدأ اليوم بدون مخاطر</TopTe>

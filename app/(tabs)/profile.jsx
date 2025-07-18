@@ -12,14 +12,10 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { userSelector } from "../redux/authSlice";
-
 import { useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
-
 import { Audio } from "expo-av";
 import { createUserRequest } from "../../requestMethods";
-
-I18nManager.allowRTL(true);
 
 /* Safe Area */
 const SafeArea = styled.SafeAreaView`
@@ -74,223 +70,6 @@ const IconImage = styled.Image`
   height: 20px;
 `;
 
-/* Section Header */
-const SectionHeader = styled.View`
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-/* Section Title */
-const SectionTitleText = styled.Text`
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-`;
-
-/* See More Button */
-const SeeMoreButton = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-`;
-
-/* See More Button Text */
-const SeeMoreButtonText = styled.Text`
-  color: #4c47e9;
-  font-size: 14px;
-`;
-
-/* See More Icon */
-const SeeMoreIcon = styled.Image`
-  width: 16px;
-  height: 16px;
-  tint-color: #4c47e9;
-  margin-right: 5px;
-`;
-
-/* Upgrade Section */
-const UpgradeContainer = styled.View`
-  padding: 15px;
-  background-color: #fff7e6;
-  margin: 10px 20px;
-  border-radius: 10px;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-  elevation: 3;
-`;
-
-/* Upgrade Content */
-const UpgradeContent = styled.View`
-  flex-direction: row-reverse;
-  align-items: center;
-`;
-
-/* Crown Icon */
-const CrownIcon = styled.Image`
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
-`;
-
-/* Upgrade Text */
-const UpgradeText = styled.Text`
-  color: #333;
-  font-size: 16px;
-`;
-
-/* Goals Section */
-const GoalsContainer = styled.View`
-  background-color: white;
-  margin: 10px 20px;
-  border-radius: 10px;
-  padding: 15px;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-  elevation: 3;
-`;
-
-/* Goals Header */
-const GoalsHeader = styled(SectionHeader)``;
-
-/* Goals Title */
-const GoalsTitle = styled.Text`
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-`;
-
-/* Goals Toggle */
-const GoalsToggle = styled.View`
-  flex-direction: row-reverse;
-  align-items: center;
-  margin-bottom: 10px;
-`;
-
-/* Toggle Button */
-const ToggleButton = styled.TouchableOpacity`
-  flex: 1;
-  padding: 12px 0;
-  background-color: ${(props) => (props.active ? "#4c47e9" : "#f2f5f9")};
-  border-radius: 20px;
-  margin-left: ${(props) => (props.isFirst ? "0px" : "10px")};
-`;
-
-/* Toggle Text */
-const ToggleText = styled.Text`
-  color: ${(props) => (props.active ? "#fff" : "#333")};
-  font-size: 14px;
-  font-weight: ${(props) => (props.active ? "600" : "400")};
-  text-align: center;
-`;
-
-/* Daily Progress */
-const DailyProgress = styled.View`
-  margin-top: 10px;
-`;
-
-/* Progress Row */
-const ProgressRow = styled.View`
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  margin-bottom: 10px;
-`;
-
-/* Progress Text */
-const ProgressText = styled.Text`
-  font-size: 16px;
-  color: #333;
-`;
-
-/* Progress Value */
-const ProgressValue = styled.Text`
-  font-size: 16px;
-  font-weight: bold;
-  color: #4c47e9;
-`;
-
-/* Streak Section */
-const StreakContainer = styled.View`
-  background-color: #f7fbff;
-  margin: 15px 20px;
-  border-radius: 12px;
-  padding: 20px;
-  shadow-color: #000;
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.1;
-  shadow-radius: 6px;
-  elevation: 5;
-`;
-
-/* Streak Title */
-const StreakTitle = styled.Text`
-  font-size: 22px;
-  font-weight: bold;
-  color: #4c47e9;
-  text-align: right;
-`;
-
-/* Streak Stats */
-const StreakStats = styled.View`
-  background-color: white;
-  padding: 15px;
-  border-radius: 10px;
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-/* Streak Badge */
-const StreakBadge = styled.View`
-  align-items: center;
-  justify-content: center;
-`;
-
-/* Progress Bar Container */
-const ProgressBarContainer = styled.View`
-  flex: 1;
-  margin: 0 15px;
-`;
-
-/* Progress Bar Background */
-const ProgressBarBackground = styled.View`
-  width: 100%;
-  height: 12px;
-  background-color: #e0e0e0;
-  border-radius: 6px;
-  overflow: hidden;
-  flex-direction: row-reverse;
-  margin-top: 10px;
-`;
-
-/* Progress Bar */
-const ProgressBar = styled.View`
-  width: ${(props) => props.progress}%;
-  height: 100%;
-  background-color: #4c47e9;
-  align-self: flex-end;
-`;
-
-/* Current Streak */
-const CurrentStreak = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
-  color: #4c47e9;
-  text-align: right;
-  margin-bottom: 3px;
-`;
-
-/* Highest Streak */
-const HighestStreak = styled.Text`
-  font-size: 16px;
-  color: #888;
-  text-align: right;
-`;
-
 /* Invite Section */
 const InviteContainer = styled.View`
   background-color: #e6f7ff;
@@ -325,7 +104,7 @@ const InviteText = styled.Text`
 const InviteButton = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
-  background-color: #4c47e9;
+  background-color: #ff69b4;
   padding: 12px 25px;
   border-radius: 25px;
   shadow-color: #4c47e9;
@@ -373,58 +152,9 @@ const ModalContainer = styled.View`
   elevation: 8;
 `;
 
-/* Modal Header */
-const ModalHeader = styled.View`
-  width: 100%;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-/* Modal Title */
-const ModalTitleStyled = styled.Text`
-  font-size: 20px;
-  font-weight: bold;
-  color: #333333;
-`;
-
 /* Close Button */
 const CloseButton = styled.TouchableOpacity`
   padding: 5px;
-`;
-
-/* Modal Content Wrapper */
-const ModalContent = styled.View`
-  width: 100%;
-`;
-
-/* Modal Buttons Container */
-const ModalButtons = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-  margin-top: 20px;
-`;
-
-/* Modal Button */
-const ModalButton = styled.TouchableOpacity`
-  flex: 1;
-  padding: 12px 0;
-  border-radius: 25px;
-  align-items: center;
-  justify-content: center;
-  background-color: ${(props) => (props.primary ? "#4c47e9" : "#cccccc")};
-  margin: 0 5px;
-`;
-
-/* Button Text */
-const ButtonTextStyled = styled.Text`
-  color: ${(props) => (props.primary ? "#ffffff" : "#ffffff")};
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  background-color: transparent;
 `;
 
 /* Number Slider Components */
@@ -487,59 +217,6 @@ const BadgeLabel = styled.Text`
   font-size: 14px;
   color: #333;
   text-align: center;
-`;
-
-/* Badges Container */
-const BadgesContainer = styled.View`
-  background-color: white;
-  margin: 10px 20px;
-  border-radius: 10px;
-  padding: 15px;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-  elevation: 3;
-`;
-
-/* Badges Grid */
-const BadgesGrid = styled.View`
-  flex-direction: row-reverse;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-top: 10px;
-`;
-
-/* Styled Button for "تحديد الأهداف" */
-const StyledButton = styled.View`
-  background-color: #4c47e9;
-  padding: 12px 25px;
-  border-radius: 25px;
-  align-items: center;
-  justify-content: center;
-`;
-
-/* Button Text */
-const ButtonText = styled.Text`
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-`;
-
-/* Congratulatory Text */
-const CongratulatoryText = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
-  color: #333333;
-  text-align: center;
-  margin-bottom: 20px;
-`;
-
-/* Badge Image */
-const BadgeImage = styled.Image`
-  width: 100px;
-  height: 100px;
-  margin-bottom: 20px;
 `;
 
 /* Invite Modal Styled Components */
@@ -645,69 +322,6 @@ const EnvelopeIcon = styled.Image`
   margin: 0 5px;
 `;
 
-/* Reusable NumberSlider Component */
-const NumberSlider = ({ label, numbers, selectedValue, onSelect }) => {
-  const flatListRef = useRef(null);
-
-  const handleSelect = (num) => {
-    onSelect(num);
-    const index = numbers.indexOf(num);
-    if (flatListRef.current && index !== -1) {
-      flatListRef.current.scrollToIndex({
-        index,
-        animated: true,
-        viewPosition: 0,
-      });
-    }
-  };
-
-  return (
-    <NumberSliderContainer>
-      <SliderLabel>{label}</SliderLabel>
-      <NumberList
-        ref={flatListRef}
-        data={numbers}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.toString()}
-        renderItem={({ item }) => (
-          <NumberItem
-            selected={selectedValue === item}
-            onPress={() => handleSelect(item)}
-          >
-            <NumberText selected={selectedValue === item}>{item}</NumberText>
-          </NumberItem>
-        )}
-        contentContainerStyle={{
-          flexDirection: "row",
-          justifyContent: "flex-start",
-          paddingLeft: 10,
-        }}
-        snapToInterval={ITEM_WIDTH + 10}
-        decelerationRate="fast"
-        getItemLayout={(data, index) => ({
-          length: ITEM_WIDTH + 10,
-          offset: (ITEM_WIDTH + 10) * index,
-          index,
-        })}
-        inverted={I18nManager.isRTL ? true : false}
-        style={{
-          transform: I18nManager.isRTL ? [{ scaleX: -1 }] : [],
-        }}
-        renderToHardwareTextureAndroid
-      />
-    </NumberSliderContainer>
-  );
-};
-
-/* Reusable Badge Item Component */
-const BadgeItemComponent = ({ icon, label, isUnlocked }) => (
-  <BadgeItem>
-    <BadgeIconStyled source={icon} style={{ opacity: isUnlocked ? 1 : 0.3 }} />
-    <BadgeLabel>{label}</BadgeLabel>
-  </BadgeItem>
-);
-
 /* Profile Component */
 const Profile = () => {
   const { currentUser } = useSelector(userSelector);
@@ -764,7 +378,6 @@ const Profile = () => {
 
   useEffect(() => {
     if (currentUser) {
-      console.log("Current User:", currentUser);
       const link = `https://apps.apple.com/sa/app/fluentfox-language-lessons/id6673901781?referralCode=${currentUser.referralCode}`;
       setReferralLink(link);
     }
@@ -777,13 +390,6 @@ const Profile = () => {
 
   const handleSetting = (section) => {
     router.push("setting");
-  };
-
-  const handleSaveGoals = () => {
-    console.log(
-      `Chapters: ${selectedChapters}, Training Days: ${selectedTrainingDays}`
-    );
-    setModalVisible(false);
   };
 
   // Define Badges with XP Requirements

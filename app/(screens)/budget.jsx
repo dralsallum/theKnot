@@ -1,3 +1,4 @@
+// Budget.jsx
 import React, { useState, useEffect } from "react";
 import {
   ScrollView,
@@ -7,46 +8,49 @@ import {
   StatusBar,
   Modal,
   TextInput,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import styled from "styled-components/native";
 import { useSelector } from "react-redux";
 import { createUserRequest } from "../../requestMethods";
+import { Feather } from "@expo/vector-icons";
 
 /* ---------- STYLED COMPONENTS ---------- */
 const Container = styled.SafeAreaView`
   flex: 1;
   background-color: #fdf8f2;
+  direction: rtl;
 `;
-
 const Header = styled.View`
   padding: 20px;
   background-color: #fdf8f2;
 `;
-
 const HeaderRow = styled.View`
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 `;
-
-const BackArrow = styled.Text`
-  font-size: 20px;
-  margin-right: 16px;
-  color: #000;
+const BackArrowContainer = styled.TouchableOpacity`
+  padding: 5px;
 `;
-
+const BackArrowImage = styled.Image`
+  width: 20px;
+  height: 20px;
+`;
 const Title = styled.Text`
   font-size: 28px;
   font-weight: 700;
   color: #000;
+  text-align: left;
+  flex: 1;
 `;
-
 const Subtitle = styled.Text`
   font-size: 16px;
   color: #666;
+  text-align: left;
 `;
-
 const ChartContainer = styled.View`
   margin: 20px;
   background-color: #fff;
@@ -55,7 +59,6 @@ const ChartContainer = styled.View`
   align-items: center;
   justify-content: center;
 `;
-
 const DonutCircle = styled.View`
   width: 220px;
   height: 220px;
@@ -66,7 +69,6 @@ const DonutCircle = styled.View`
   justify-content: center;
   margin-bottom: 20px;
 `;
-
 const DonutRing = styled.View`
   width: 220px;
   height: 220px;
@@ -75,61 +77,48 @@ const DonutRing = styled.View`
   border-color: #ec4899;
   position: absolute;
 `;
-
 const DonutInnerText = styled.Text`
   font-size: 22px;
   font-weight: 700;
   text-align: center;
 `;
-
 const DonutInnerSubText = styled.Text`
   font-size: 14px;
   color: #666;
   text-align: center;
 `;
-
 const CustomizeButton = styled.TouchableOpacity`
   background-color: #ec4899;
   padding: 14px 24px;
   border-radius: 24px;
 `;
-
 const CustomizeButtonText = styled.Text`
   color: #fff;
   font-size: 16px;
   font-weight: 600;
+  text-align: left;
 `;
-
 const InfoContainer = styled.View`
   padding: 0 20px 20px;
 `;
-
 const SectionTitle = styled.Text`
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 4px;
+  text-align: left;
 `;
-
 const SectionSubtitle = styled.Text`
   font-size: 14px;
   color: #666;
   margin-bottom: 8px;
+  text-align: left;
 `;
-
-const LinkText = styled.Text`
-  font-size: 14px;
-  color: #0066cc;
-  margin-top: 6px;
-`;
-
-/* ---------- MAIN MODAL STYLES ---------- */
 const ModalOverlay = styled.View`
   flex: 1;
   background-color: rgba(0, 0, 0, 0.5);
   justify-content: center;
   align-items: center;
 `;
-
 const ModalContainer = styled.View`
   width: 100%;
   height: 100%;
@@ -137,78 +126,72 @@ const ModalContainer = styled.View`
   border-radius: 16px;
   padding: 60px 20px;
 `;
-
 const ModalHeader = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 `;
-
 const HeaderSection = styled.View`
   flex: 1;
   align-items: ${(props) => props.align || "center"};
 `;
-
 const HeaderText = styled.Text`
   font-size: 16px;
   font-weight: 600;
   color: #000;
+  text-align: left;
 `;
-
 const ModalTitle = styled.Text`
   font-size: 20px;
   font-weight: 700;
   color: #000;
   margin-bottom: 8px;
+  text-align: left;
 `;
-
 const ModalDescription = styled.Text`
   font-size: 14px;
   color: #666;
   line-height: 20px;
   margin-bottom: 16px;
+  text-align: left;
 `;
-
 const HighlightLink = styled.Text`
   color: #0066cc;
   text-decoration-line: underline;
+  text-align: left;
 `;
-
 const BoldText = styled.Text`
   font-weight: 700;
+  text-align: left;
 `;
-
 const BudgetRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
 `;
-
 const BudgetLeft = styled.View``;
-
 const BudgetAmount = styled.Text`
   font-size: 22px;
   font-weight: 700;
   color: #000;
+  text-align: left;
 `;
-
 const BudgetNote = styled.Text`
   font-size: 14px;
   color: #666;
   margin-top: 2px;
+  text-align: left;
 `;
-
 const GoalButton = styled.TouchableOpacity``;
-
 const GoalButtonText = styled.Text`
   font-size: 14px;
   color: #0066cc;
   margin-top: 6px;
   text-decoration-line: underline;
+  text-align: left;
 `;
-
 const VendorItem = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
@@ -217,42 +200,24 @@ const VendorItem = styled.TouchableOpacity`
   border-bottom-width: 1px;
   border-bottom-color: #eee;
 `;
-
 const VendorTitle = styled.Text`
   font-size: 16px;
   font-weight: 600;
   color: #000;
+  text-align: left;
 `;
-
 const VendorRange = styled.Text`
   font-size: 14px;
   color: #666;
   margin-top: 2px;
+  text-align: left;
 `;
-
-const Arrow = styled.Text`
-  font-size: 20px;
-  color: #000;
-`;
-
-const vendorData = [
-  { title: "Venue", range: "$1,010 - $6,500" },
-  { title: "Catering", range: "$1,150 - $3,450" },
-  { title: "Photographer", range: "$1,230 - $3,000" },
-  { title: "Videographer", range: "$602 - $2,530" },
-  { title: "Wedding dress", range: "$793 - $2,302" },
-  { title: "Tuxedo or suit", range: "$71 - $223" },
-  { title: "Beauty services", range: "$101 - $201 per person" },
-];
-
-/* ---------- CENTERED MODAL STYLES FOR GOAL BUDGET ---------- */
 const CenterModalOverlay = styled.View`
   flex: 1;
   background-color: rgba(0, 0, 0, 0.5);
   justify-content: center;
   align-items: center;
 `;
-
 const CenterModalContainer = styled.View`
   width: 80%;
   background-color: #fff;
@@ -260,92 +225,201 @@ const CenterModalContainer = styled.View`
   padding: 30px 20px;
 `;
 
+const sumSubBudgets = (obj) =>
+  Object.values(obj)
+    .map((v) => Number(v) || 0)
+    .reduce((a, b) => a + b, 0);
+
 /* ---------- MAIN COMPONENT ---------- */
 const Budget = () => {
+  /* ---------- ROUTER & USER ---------- */
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [goalModalVisible, setGoalModalVisible] = useState(false);
-  const [goalBudget, setGoalBudget] = useState("");
-  const [selectedBudget, setSelectedBudget] = useState(20430);
   const user = useSelector((state) => state.user.currentUser);
   const userId = user?._id;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [goalModalVisible, setGoalModalVisible] = useState(false);
+  const [individualModalVisible, setIndividualModalVisible] = useState(false);
+  const [inputBudget, setInputBudget] = useState("");
+  const [currentField, setCurrentField] = useState("budget");
+  const [currentVendorTitle, setCurrentVendorTitle] = useState("");
+  const [selectedBudget, setSelectedBudget] = useState(0);
+  const [locationBudget, setLocationBudget] = useState(0);
+  const [photoBudget, setPhotoBudget] = useState(0);
+  const [dressBudget, setDressBudget] = useState(0);
+  const [thoabBudget, setThoabBudget] = useState(0);
+  const [salonBudget, setSalonBudget] = useState(0);
+  const [flowersBudget, setFlowersBudget] = useState(0);
+  const [cateringBudget, setCateringBudget] = useState(0);
+  const [realBudget, setRealBudget] = useState(0);
 
-  // Fetch the budget from the backend when the component mounts (or when userId changes)
-  useEffect(() => {
-    const fetchBudget = async () => {
-      if (!userId) return;
-      try {
-        const res = await createUserRequest().get(`/users/budget/${userId}`);
-        // Update the budget or fallback to default if not set
-        setSelectedBudget(res.data.budget || 20430);
-      } catch (error) {
-        console.error("Error fetching budget", error);
-      }
-    };
-    fetchBudget();
-  }, [userId]);
-
-  // When user saves the goal budget
-  const handleSaveGoalBudget = async () => {
-    const numericBudget = parseInt(goalBudget, 10);
-    if (!isNaN(numericBudget)) {
-      try {
-        const res = await createUserRequest().put(`/users/budget/${userId}`, {
-          budget: numericBudget,
-        });
-        setSelectedBudget(res.data.budget);
-      } catch (error) {
-        console.error("Error updating budget", error);
-      }
-    }
-    setGoalModalVisible(false);
+  /* ---------- SETTER MAP ---------- */
+  const setterMap = {
+    budget: setSelectedBudget,
+    locationBudget: setLocationBudget,
+    photoBudget: setPhotoBudget,
+    dressBudget: setDressBudget,
+    thoabBudget: setThoabBudget,
+    salonBudget: setSalonBudget,
+    flowersBudget: setFlowersBudget,
+    cateringBudget: setCateringBudget,
   };
 
+  /* ---------- CALCULATE REAL BUDGET WHENEVER SUB-BUDGETS CHANGE ---------- */
+  useEffect(() => {
+    const newRealBudget = sumSubBudgets({
+      locationBudget,
+      photoBudget,
+      dressBudget,
+      thoabBudget,
+      salonBudget,
+      flowersBudget,
+      cateringBudget,
+    });
+    setRealBudget(newRealBudget);
+  }, [
+    locationBudget,
+    photoBudget,
+    dressBudget,
+    thoabBudget,
+    salonBudget,
+    flowersBudget,
+    cateringBudget,
+  ]);
+
+  /* ---------- FETCH INITIAL DATA ---------- */
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const res = await createUserRequest().get(`/users/budget/${userId}`);
+        const data = res.data;
+
+        // تأكد أن الـ backend يُرجع جميع الحقول
+        setSelectedBudget(data.budget ?? 20430);
+        setLocationBudget(data.locationBudget ?? 0);
+        setPhotoBudget(data.photoBudget ?? 0);
+        setDressBudget(data.dressBudget ?? 0);
+        setThoabBudget(data.thoabBudget ?? 0);
+        setSalonBudget(data.salonBudget ?? 0);
+        setFlowersBudget(data.flowersBudget ?? 0);
+        setCateringBudget(data.cateringBudget ?? 0);
+        // Remove the setRealBudget call from here since it will be calculated by the useEffect above
+      } catch (err) {
+        console.error("خطأ في جلب الميزانية", err);
+      }
+    })();
+  }, [userId]);
+
+  /* ---------- SAVE (TOTAL OR INDIVIDUAL) ---------- */
+  const handleSaveBudget = async () => {
+    const numeric = parseInt(inputBudget, 10);
+    if (isNaN(numeric)) return;
+
+    const setter = setterMap[currentField];
+    if (setter) setter(numeric);
+
+    try {
+      await createUserRequest().put(`/users/budget/${userId}`, {
+        [currentField]: numeric,
+      });
+    } catch (err) {
+      console.error("error with budget", err);
+    }
+
+    setGoalModalVisible(false);
+    setIndividualModalVisible(false);
+    setInputBudget("");
+  };
+
+  /* ---------- OPEN MODALS ---------- */
+  const openGoalModal = () => {
+    setCurrentField("budget");
+    setCurrentVendorTitle("الإجمالية");
+    setInputBudget(selectedBudget.toString());
+    setModalVisible(false);
+    setGoalModalVisible(true);
+  };
+
+  const openVendorModal = (field, title) => {
+    // قيمة الحقل الحالي
+    const currentValue = {
+      locationBudget,
+      photoBudget,
+      dressBudget,
+      thoabBudget,
+      salonBudget,
+      flowersBudget,
+      cateringBudget,
+    }[field];
+
+    setCurrentField(field);
+    setCurrentVendorTitle(title);
+    setInputBudget((currentValue ?? "").toString());
+    setModalVisible(false);
+    setIndividualModalVisible(true);
+  };
+
+  /* ---------- VENDOR DATA ---------- */
+  const vendorData = [
+    { key: "locationBudget", title: "الموقع", range: `${locationBudget} ريال` },
+    { key: "flowersBudget", title: "الورد", range: `${flowersBudget} ريال` },
+    { key: "photoBudget", title: "المصور", range: `${photoBudget} ريال` },
+    {
+      key: "cateringBudget",
+      title: "مصمم الفيديو",
+      range: `${cateringBudget} ريال`,
+    },
+    { key: "dressBudget", title: "فستان الزفاف", range: `${dressBudget} ريال` },
+    { key: "thoabBudget", title: "بذلة رسمية", range: `${thoabBudget} ريال` },
+    {
+      key: "salonBudget",
+      title: "خدمات التجميل",
+      range: `${salonBudget} ريال`,
+    },
+  ];
+
+  /* ---------- RENDER ---------- */
   return (
     <Container>
       <StatusBar barStyle="dark-content" backgroundColor="#fdf8f2" />
-
-      {/* HEADER WITH BACK ARROW */}
+      {/* HEADER */}
       <Header>
         <HeaderRow>
-          <TouchableOpacity onPress={() => router.back()}>
-            <BackArrow>←</BackArrow>
-          </TouchableOpacity>
-          <Title>Budget Advisor</Title>
+          <Title>مستشار الميزانية</Title>
+          <BackArrowContainer onPress={() => router.back()}>
+            <BackArrowImage
+              source={require("../../assets/icons/arrowLeft.png")}
+            />
+          </BackArrowContainer>
         </HeaderRow>
         <Subtitle>
-          Get cost estimates and a breakdown of what couples in your area
-          typically spend.
+          احصل على تقديرات التكلفة وتفصيل لما ينفقه الأزواج عادة في منطقتك.
         </Subtitle>
       </Header>
 
       <ScrollView>
-        {/* Donut Chart Section */}
+        {/* DONUT */}
         <ChartContainer>
           <DonutCircle>
             <DonutRing />
-            <DonutInnerText>${selectedBudget}</DonutInnerText>
-            <DonutInnerSubText>
-              Total average cost{"\n"}Iowa City, IA
-            </DonutInnerSubText>
+            <DonutInnerText>{selectedBudget} ر.س</DonutInnerText>
+            <DonutInnerSubText>ميزانيتك التي حددتها</DonutInnerSubText>
           </DonutCircle>
-
           <CustomizeButton onPress={() => setModalVisible(true)}>
-            <CustomizeButtonText>Customize</CustomizeButtonText>
+            <CustomizeButtonText>تخصيص</CustomizeButtonText>
           </CustomizeButton>
         </ChartContainer>
 
-        {/* Extra Info */}
+        {/* INFO */}
         <InfoContainer>
-          <SectionTitle>Vendors in Iowa City, IA</SectionTitle>
+          <SectionTitle>الموردون في آيوا سيتي، أيوا</SectionTitle>
           <SectionSubtitle>
-            Most couples spend: $8,490 - $23,480
+            ينفق معظم الأزواج: 8,490 - 23,480 ر.س
           </SectionSubtitle>
-          {/* … Additional UI … */}
         </InfoContainer>
       </ScrollView>
 
-      {/* ---------- MAIN "Customize" MODAL ---------- */}
+      {/* ---------- MAIN CUSTOMIZE MODAL ---------- */}
       <Modal
         visible={modalVisible}
         animationType="fade"
@@ -357,49 +431,47 @@ const Budget = () => {
             <ModalHeader>
               <HeaderSection align="flex-start">
                 <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <HeaderText>Cancel</HeaderText>
+                  <HeaderText>إلغاء</HeaderText>
                 </TouchableOpacity>
               </HeaderSection>
               <HeaderSection>
-                <HeaderText>Customize</HeaderText>
+                <HeaderText>تخصيص</HeaderText>
               </HeaderSection>
               <HeaderSection align="flex-end">
                 <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <HeaderText>Save</HeaderText>
+                  <HeaderText>حفظ</HeaderText>
                 </TouchableOpacity>
               </HeaderSection>
             </ModalHeader>
 
-            <ModalTitle>Select vendors for your budget</ModalTitle>
+            <ModalTitle>اختر الموردين لميزانيتك</ModalTitle>
             <ModalDescription>
-              Start your budget with the latest spending trends in{" "}
-              <HighlightLink>Iowa City, IA</HighlightLink> where the average is{" "}
-              <BoldText>$20,430</BoldText>
+              ابدأ ميزانيتك بأحدث اتجاهات الإنفاق في{" "}
+              <HighlightLink>آيوا سيتي، أيوا</HighlightLink> حيث المتوسط هو{" "}
+              <BoldText>{selectedBudget} ر.س</BoldText>
             </ModalDescription>
 
             <BudgetRow>
               <BudgetLeft>
-                <BudgetAmount>${selectedBudget}</BudgetAmount>
-                <BudgetNote>Based on selections</BudgetNote>
+                <BudgetAmount>{realBudget} ر.س</BudgetAmount>
+                <BudgetNote>بناءً على الاختيارات</BudgetNote>
               </BudgetLeft>
-              <GoalButton
-                onPress={() => {
-                  setModalVisible(false);
-                  setGoalModalVisible(true);
-                }}
-              >
-                <GoalButtonText>Set your goal budget</GoalButtonText>
+              <GoalButton onPress={openGoalModal}>
+                <GoalButtonText>حدد ميزانيتك المستهدفة</GoalButtonText>
               </GoalButton>
             </BudgetRow>
 
             <ScrollView style={{ flex: 1 }}>
-              {vendorData.map((item, index) => (
-                <VendorItem key={index}>
+              {vendorData.map((item) => (
+                <VendorItem
+                  key={item.key}
+                  onPress={() => openVendorModal(item.key, item.title)}
+                >
                   <View>
                     <VendorTitle>{item.title}</VendorTitle>
                     <VendorRange>{item.range}</VendorRange>
                   </View>
-                  <Arrow>›</Arrow>
+                  <Feather name="chevron-left" size={22} color="black" />
                 </VendorItem>
               ))}
             </ScrollView>
@@ -407,7 +479,7 @@ const Budget = () => {
         </ModalOverlay>
       </Modal>
 
-      {/* ---------- CENTERED "Set Goal Budget" MODAL ---------- */}
+      {/* ---------- TOTAL BUDGET MODAL ---------- */}
       <Modal
         visible={goalModalVisible}
         animationType="fade"
@@ -419,19 +491,19 @@ const Budget = () => {
             <ModalHeader>
               <HeaderSection align="flex-start">
                 <TouchableOpacity onPress={() => setGoalModalVisible(false)}>
-                  <HeaderText>Cancel</HeaderText>
+                  <HeaderText>إلغاء</HeaderText>
                 </TouchableOpacity>
               </HeaderSection>
               <HeaderSection align="flex-end">
-                <TouchableOpacity onPress={handleSaveGoalBudget}>
-                  <HeaderText>Save</HeaderText>
+                <TouchableOpacity onPress={handleSaveBudget}>
+                  <HeaderText>حفظ</HeaderText>
                 </TouchableOpacity>
               </HeaderSection>
             </ModalHeader>
 
             <View style={{ marginTop: 20 }}>
               <Text style={{ marginBottom: 8, fontSize: 16 }}>
-                Enter your total budget:
+                أدخل ميزانيتك الإجمالية:
               </Text>
               <TextInput
                 style={{
@@ -441,10 +513,56 @@ const Budget = () => {
                   padding: 10,
                   fontSize: 16,
                 }}
-                placeholder="e.g. 25000"
+                placeholder="مثلاً 25000"
                 keyboardType="numeric"
-                value={goalBudget}
-                onChangeText={setGoalBudget}
+                value={inputBudget}
+                onChangeText={setInputBudget}
+              />
+            </View>
+          </CenterModalContainer>
+        </CenterModalOverlay>
+      </Modal>
+
+      {/* ---------- INDIVIDUAL VENDOR MODAL ---------- */}
+      <Modal
+        visible={individualModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setIndividualModalVisible(false)}
+      >
+        <CenterModalOverlay>
+          <CenterModalContainer>
+            <ModalHeader>
+              <HeaderSection align="flex-start">
+                <TouchableOpacity
+                  onPress={() => setIndividualModalVisible(false)}
+                >
+                  <HeaderText>إلغاء</HeaderText>
+                </TouchableOpacity>
+              </HeaderSection>
+              <HeaderSection align="flex-end">
+                <TouchableOpacity onPress={handleSaveBudget}>
+                  <HeaderText>حفظ</HeaderText>
+                </TouchableOpacity>
+              </HeaderSection>
+            </ModalHeader>
+
+            <View style={{ marginTop: 20 }}>
+              <Text style={{ marginBottom: 8, fontSize: 16 }}>
+                أدخل ميزانيتك لـ{currentVendorTitle}:
+              </Text>
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#ccc",
+                  borderRadius: 8,
+                  padding: 10,
+                  fontSize: 16,
+                }}
+                placeholder="مثلاً 2500"
+                keyboardType="numeric"
+                value={inputBudget}
+                onChangeText={setInputBudget}
               />
             </View>
           </CenterModalContainer>

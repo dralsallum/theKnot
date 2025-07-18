@@ -21,7 +21,6 @@ Notifications.setNotificationHandler({
 function RootProvider({ children }) {
   const [isRehydrating, setIsRehydrating] = useState(true);
   const dispatch = useDispatch();
-  const router = useRouter();
 
   // RooyLayout.js
   useEffect(() => {
@@ -62,10 +61,9 @@ function RootProvider({ children }) {
   }, [dispatch]);
 
   if (isRehydrating) {
-    // Show a quick loading screen while we check token
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#4c47e8" />
+        <ActivityIndicator size="large" color="#ff69b4" />
       </View>
     );
   }
@@ -81,10 +79,6 @@ const RooyLayout = () => {
         <RootProvider>
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="components/streak"
-              options={{ headerShown: false }}
-            />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(screens)" options={{ headerShown: false }} />

@@ -18,7 +18,6 @@ import { selectCurrentUser, selectSavedVendorIds } from "../redux/authSlice";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 32; // 16px padding on each side
-
 const Favorites = () => {
   const router = useRouter();
   const currentUser = useSelector(selectCurrentUser);
@@ -27,41 +26,41 @@ const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("الكل");
   const [categoryCounts, setCategoryCounts] = useState({});
   const [filteredFavorites, setFilteredFavorites] = useState([]);
 
-  // Check authentication status
+  // فحص حالة المصادقة
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
         if (currentUser) {
           setIsAuthenticated(true);
         } else {
-          // Check for stored userData in AsyncStorage as fallback
+          // فحص البيانات المحفوظة في AsyncStorage كخيار احتياطي
           const userData = await AsyncStorage.getItem("userData");
           if (userData) {
             setIsAuthenticated(true);
           } else {
-            // If not authenticated, redirect to login
+            // إذا لم يكن مسجل الدخول، إعادة توجيه لصفحة تسجيل الدخول
             Alert.alert(
-              "Sign In Required",
-              "Please sign in to view your favorites",
+              "تسجيل الدخول مطلوب",
+              "يرجى تسجيل الدخول لعرض المفضلة",
               [
                 {
-                  text: "Cancel",
+                  text: "إلغاء",
                   onPress: () => router.back(),
                   style: "cancel",
                 },
-                { text: "Sign In", onPress: () => router.push("/login") },
+                { text: "تسجيل الدخول", onPress: () => router.push("/login") },
               ]
             );
           }
         }
       } catch (err) {
-        console.error("Error checking auth status:", err);
+        console.error("خطأ في فحص حالة المصادقة:", err);
       } finally {
-        // If user is authenticated, continue; otherwise we stop loading here
+        // إذا كان المستخدم مسجل الدخول، متابعة؛ وإلا نوقف التحميل هنا
         if (!isAuthenticated) {
           setLoading(false);
         }
@@ -71,7 +70,7 @@ const Favorites = () => {
     checkAuthStatus();
   }, [currentUser]);
 
-  // Fetch favorites
+  // جلب المفضلة
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!isAuthenticated) return;
@@ -81,13 +80,13 @@ const Favorites = () => {
         let userId = currentUser?._id;
 
         if (!userId) {
-          // Try to get user ID from AsyncStorage as fallback
+          // محاولة الحصول على معرف المستخدم من AsyncStorage كخيار احتياطي
           const userData = await AsyncStorage.getItem("userData");
           if (userData) {
             const parsedUser = JSON.parse(userData);
             userId = parsedUser._id;
           } else {
-            throw new Error("User ID not found");
+            throw new Error("معرف المستخدم غير موجود");
           }
         }
 
@@ -96,20 +95,17 @@ const Favorites = () => {
 
         if (response.data && Array.isArray(response.data)) {
           setFavorites(response.data);
-          // Calculate category counts
-          const counts = { All: response.data.length };
+          // حساب عدد الفئات
+          const counts = { الكل: response.data.length };
           response.data.forEach((vendor) => {
-            const category = vendor.category || "Uncategorized";
+            const category = getCategoryInArabic(vendor.category) || "غير مصنف";
             counts[category] = (counts[category] || 0) + 1;
           });
           setCategoryCounts(counts);
         }
       } catch (err) {
-        console.error("Error fetching favorites:", err);
-        Alert.alert(
-          "Error",
-          "Could not load your favorites. Please try again."
-        );
+        console.error("خطأ في جلب المفضلة:", err);
+        Alert.alert("خطأ", "لا يمكن تحميل المفضلة. يرجى المحاولة مرة أخرى.");
       } finally {
         setLoading(false);
       }
@@ -120,21 +116,38 @@ const Favorites = () => {
     }
   }, [isAuthenticated, savedVendorIds]);
 
-  // Filter favorites by category
+  // تصفية المفضلة حسب الفئة
   useEffect(() => {
     let filtered = favorites;
 
-    // Filter by category
-    if (selectedCategory !== "All") {
+    // تصفية حسب الفئة
+    if (selectedCategory !== "الكل") {
       filtered = filtered.filter(
-        (vendor) => vendor.category === selectedCategory
+        (vendor) => getCategoryInArabic(vendor.category) === selectedCategory
       );
     }
 
     setFilteredFavorites(filtered);
   }, [selectedCategory, favorites]);
 
-  // Remove from favorites
+  // ترجمة الفئات للعربية
+  const getCategoryInArabic = (category) => {
+    const categoryMap = {
+      Venue: "قاعات",
+      Photographer: "تصوير",
+      Florist: "زهور",
+      Catering: "تقديم طعام",
+      Music: "موسيقى",
+      Cake: "كيك",
+      DJ: "دي جي",
+      Planner: "منظم حفلات",
+      Decor: "ديكور",
+      Uncategorized: "غير مصنف",
+    };
+    return categoryMap[category] || category;
+  };
+
+  // إزالة من المفضلة
   const removeFromFavorites = async (vendorId) => {
     try {
       let userId = currentUser?._id;
@@ -145,39 +158,36 @@ const Favorites = () => {
           const parsedUser = JSON.parse(userData);
           userId = parsedUser._id;
         } else {
-          throw new Error("User ID not found");
+          throw new Error("معرف المستخدم غير موجود");
         }
       }
 
       const userRequest = createUserRequest();
       await userRequest.delete(`/users/${userId}/favorites/${vendorId}`);
 
-      // Update local state
+      // تحديث الحالة المحلية
       const updatedFavorites = favorites.filter(
         (vendor) => vendor._id !== vendorId
       );
       setFavorites(updatedFavorites);
 
-      // Recalculate category counts
-      const updatedCounts = { All: updatedFavorites.length };
+      // إعادة حساب عدد الفئات
+      const updatedCounts = { الكل: updatedFavorites.length };
       updatedFavorites.forEach((vendor) => {
-        const category = vendor.category || "Uncategorized";
+        const category = getCategoryInArabic(vendor.category) || "غير مصنف";
         updatedCounts[category] = (updatedCounts[category] || 0) + 1;
       });
       setCategoryCounts(updatedCounts);
 
-      // Show success message
-      Alert.alert("Success", "Vendor removed from favorites.");
+      // عرض رسالة نجاح
+      Alert.alert("نجح", "تم إزالة المورد من المفضلة.");
     } catch (err) {
-      console.error("Error removing from favorites:", err);
-      Alert.alert(
-        "Error",
-        "Could not remove from favorites. Please try again."
-      );
+      console.error("خطأ في إزالة من المفضلة:", err);
+      Alert.alert("خطأ", "لا يمكن إزالة من المفضلة. يرجى المحاولة مرة أخرى.");
     }
   };
 
-  // Navigate to vendor details
+  // الانتقال لتفاصيل المورد
   const navigateToVendorDetails = (vendorId) => {
     router.push({
       pathname: "/booking",
@@ -185,64 +195,64 @@ const Favorites = () => {
     });
   };
 
-  // Get all unique categories from favorites
+  // الحصول على جميع الفئات الفريدة من المفضلة
   const getCategories = () => {
-    const categories = ["All"];
+    const categories = ["الكل"];
     Object.keys(categoryCounts).forEach((category) => {
-      if (category && category !== "All" && !categories.includes(category)) {
+      if (category && category !== "الكل" && !categories.includes(category)) {
         categories.push(category);
       }
     });
     return categories;
   };
 
-  // Get category icon
+  // الحصول على أيقونة الفئة
   const getCategoryIcon = (category) => {
     switch (category) {
-      case "All":
+      case "الكل":
         return "grid";
-      case "Venue":
+      case "قاعات":
         return "home";
-      case "Photographer":
+      case "تصوير":
         return "camera";
-      case "Florist":
+      case "زهور":
         return "flower";
-      case "Catering":
+      case "تقديم طعام":
         return "coffee";
-      case "Music":
+      case "موسيقى":
         return "music";
-      case "Cake":
+      case "كيك":
         return "pie-chart";
-      case "DJ":
+      case "دي جي":
         return "disc";
-      case "Planner":
+      case "منظم حفلات":
         return "calendar";
-      case "Decor":
+      case "ديكور":
         return "layers";
       default:
         return "bookmark";
     }
   };
 
-  // Render empty state
+  // عرض الحالة الفارغة
   const renderEmptyState = () => (
     <EmptyContainer>
       <EmptyIconContainer>
         <Feather name="heart" size={60} color="#e066a6" />
       </EmptyIconContainer>
-      <EmptyTitle>No favorites yet</EmptyTitle>
+      <EmptyTitle>لا توجد مفضلة حتى الآن</EmptyTitle>
       <EmptySubtitle>
-        {selectedCategory === "All"
-          ? "Your favorite vendors will appear here"
-          : `You haven't saved any ${selectedCategory} vendors yet`}
+        {selectedCategory === "الكل"
+          ? "الموردون المفضلون لديك سيظهرون هنا"
+          : `لم تقم بحفظ أي موردين من فئة ${selectedCategory} حتى الآن`}
       </EmptySubtitle>
       <BrowseButton onPress={() => router.push("/")}>
-        <BrowseButtonText>Browse Vendors</BrowseButtonText>
+        <BrowseButtonText>تصفح الموردين</BrowseButtonText>
       </BrowseButton>
     </EmptyContainer>
   );
 
-  // Render vendor item
+  // عرض عنصر المورد
   const renderVendorItem = ({ item }) => (
     <VendorCard>
       <TouchableCard onPress={() => navigateToVendorDetails(item._id)}>
@@ -258,12 +268,14 @@ const Favorites = () => {
           <Gradient />
           <CategoryBadge>
             <Feather
-              name={getCategoryIcon(item.category)}
+              name={getCategoryIcon(getCategoryInArabic(item.category))}
               size={12}
               color="#fff"
-              style={{ marginRight: 4 }}
+              style={{ marginLeft: 4 }}
             />
-            <CategoryBadgeText>{item.category || "Venue"}</CategoryBadgeText>
+            <CategoryBadgeText>
+              {getCategoryInArabic(item.category) || "قاعات"}
+            </CategoryBadgeText>
           </CategoryBadge>
           <HeartButton
             onPress={(e) => {
@@ -285,9 +297,9 @@ const Favorites = () => {
               name="map-pin"
               size={14}
               color="#666"
-              style={{ marginRight: 4 }}
+              style={{ marginLeft: 4 }}
             />
-            {item.location || "Location not specified"}
+            {item.location || "الموقع غير محدد"}
           </VendorLocation>
 
           <InfoRow>
@@ -307,30 +319,31 @@ const Favorites = () => {
               name="users"
               size={14}
               color="#666"
-              style={{ marginRight: 4 }}
+              style={{ marginLeft: 4 }}
             />
-            <CapacityText>{item.capacity || "N/A"} guests</CapacityText>
+            <CapacityText>{item.capacity || "غير محدد"} ضيف</CapacityText>
           </CapacityContainer>
 
           <NoteInput
-            placeholder="Add a note about this vendor..."
+            placeholder="أضف ملاحظة حول هذا المورد..."
             placeholderTextColor="#999"
             multiline={true}
             numberOfLines={2}
             maxLength={100}
+            textAlign="right"
           />
 
           <ButtonRow>
             <ViewDetailsButton
               onPress={() => navigateToVendorDetails(item._id)}
             >
-              <ViewDetailsButtonText>View Details</ViewDetailsButtonText>
+              <ViewDetailsButtonText>عرض التفاصيل</ViewDetailsButtonText>
             </ViewDetailsButton>
 
             <RequestQuoteButton
               onPress={() => navigateToVendorDetails(item._id)}
             >
-              <RequestQuoteButtonText>Request Quote</RequestQuoteButtonText>
+              <RequestQuoteButtonText>طلب عرض سعر</RequestQuoteButtonText>
             </RequestQuoteButton>
           </ButtonRow>
         </InfoContainer>
@@ -353,19 +366,19 @@ const Favorites = () => {
     <Container>
       <StatusBar barStyle="dark-content" />
 
-      {/* Header */}
+      {/* الرأس */}
       <Header>
-        <BackButton onPress={() => router.back()}>
-          <Feather name="arrow-left" size={24} color="#000" />
-        </BackButton>
-        <HeaderTitle>Saved Vendors</HeaderTitle>
-        <HeaderSubTitle>({totalCount})</HeaderSubTitle>
         <SortButton>
           <Feather name="sliders" size={20} color="#666" />
         </SortButton>
+        <HeaderSubTitle>({totalCount})</HeaderSubTitle>
+        <HeaderTitle>الموردون المحفوظون</HeaderTitle>
+        <BackButton onPress={() => router.back()}>
+          <Feather name="arrow-left" size={24} color="#000" />
+        </BackButton>
       </Header>
 
-      {/* Fixed-height Category Tabs */}
+      {/* تبويبات الفئات بارتفاع ثابت */}
       <TabsContainer>
         <TabsScrollContainer horizontal showsHorizontalScrollIndicator={false}>
           {categories.map((category) => (
@@ -382,7 +395,7 @@ const Favorites = () => {
                 />
               </TabIcon>
               <TabText active={selectedCategory === category}>
-                {category === "All" ? "All" : category}
+                {category === "الكل" ? "الكل" : category}
                 {` (${categoryCounts[category] || 0})`}
               </TabText>
             </TabItem>
@@ -390,7 +403,7 @@ const Favorites = () => {
         </TabsScrollContainer>
       </TabsContainer>
 
-      {/* Favorites List */}
+      {/* قائمة المفضلة */}
       <FlatList
         data={filteredFavorites}
         renderItem={renderVendorItem}
@@ -404,7 +417,6 @@ const Favorites = () => {
 };
 
 export default Favorites;
-
 /* ---------------------------- STYLED COMPONENTS ---------------------------- */
 
 const listContentStyle = {
@@ -416,6 +428,7 @@ const listContentStyle = {
 const Container = styled.View`
   flex: 1;
   background-color: #f9f9f9;
+  direction: rtl;
 `;
 
 const LoadingContainer = styled.View`
@@ -444,17 +457,18 @@ const BackButton = styled.TouchableOpacity`
 const HeaderTitle = styled.Text`
   font-size: 20px;
   font-weight: bold;
+  margin-right: auto;
 `;
 
 const HeaderSubTitle = styled.Text`
   font-size: 18px;
   color: #666;
-  margin-left: 4px;
+  text-align: left;
 `;
 
 const SortButton = styled.TouchableOpacity`
   padding: 8px;
-  margin-left: auto;
+  margin-right: auto;
 `;
 
 const TabsContainer = styled.View`
@@ -473,6 +487,7 @@ const TabsScrollContainer = styled.ScrollView`
 const TabItem = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
+  margin-left: 12px;
   margin-right: 12px;
   padding-horizontal: 14px;
   padding-vertical: 8px;
@@ -497,6 +512,7 @@ const TabText = styled.Text`
   font-size: 14px;
   font-weight: bold;
   color: ${(props) => (props.active ? "#fff" : "#666")};
+  text-align: left;
 `;
 
 const EmptyContainer = styled.View`
@@ -522,6 +538,7 @@ const EmptyTitle = styled.Text`
   font-weight: bold;
   margin-top: 8px;
   color: #333;
+  text-align: left;
 `;
 
 const EmptySubtitle = styled.Text`
@@ -530,6 +547,7 @@ const EmptySubtitle = styled.Text`
   text-align: center;
   margin-top: 8px;
   margin-bottom: 16px;
+  text-align: left;
 `;
 
 const BrowseButton = styled.TouchableOpacity`
@@ -544,6 +562,7 @@ const BrowseButtonText = styled.Text`
   color: #fff;
   font-weight: bold;
   font-size: 16px;
+  text-align: left;
 `;
 
 const VendorCard = styled.View`
@@ -597,6 +616,7 @@ const CategoryBadgeText = styled.Text`
   color: white;
   font-size: 12px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const HeartButton = styled.TouchableOpacity`
@@ -621,6 +641,7 @@ const VendorName = styled.Text`
   font-weight: bold;
   margin-bottom: 4px;
   color: #333;
+  text-align: left;
 `;
 
 const VendorLocation = styled.Text`
@@ -629,6 +650,7 @@ const VendorLocation = styled.Text`
   flex-direction: row;
   align-items: center;
   margin-bottom: 8px;
+  text-align: left;
 `;
 
 const InfoRow = styled.View`
@@ -648,12 +670,14 @@ const RatingText = styled.Text`
   font-weight: bold;
   font-size: 14px;
   color: #333;
+  text-align: left;
 `;
 
 const ReviewCount = styled.Text`
   font-size: 14px;
   color: #666;
   margin-left: 4px;
+  text-align: left;
 `;
 
 const PriceContainer = styled.View`
@@ -667,6 +691,7 @@ const PriceText = styled.Text`
   font-size: 14px;
   font-weight: bold;
   color: #666;
+  text-align: left;
 `;
 
 const CapacityContainer = styled.View`
@@ -678,6 +703,7 @@ const CapacityContainer = styled.View`
 const CapacityText = styled.Text`
   font-size: 14px;
   color: #666;
+  text-align: left;
 `;
 
 const NoteInput = styled(RNTextInput)`
@@ -708,6 +734,7 @@ const ViewDetailsButtonText = styled.Text`
   color: #333;
   font-weight: bold;
   font-size: 14px;
+  text-align: left;
 `;
 
 const RequestQuoteButton = styled.TouchableOpacity`
@@ -723,4 +750,5 @@ const RequestQuoteButtonText = styled.Text`
   color: #fff;
   font-weight: bold;
   font-size: 14px;
+  text-align: left;
 `;

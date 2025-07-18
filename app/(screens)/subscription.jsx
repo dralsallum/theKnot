@@ -13,7 +13,6 @@ import * as RNIap from "react-native-iap";
 import { createUserRequest } from "../../requestMethods";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../redux/authSlice";
-import Navbar from "../components/navigation/navbar";
 import useDeviceType from "../../hooks/useDeviceType";
 import * as WebBrowser from "expo-web-browser";
 
@@ -267,7 +266,6 @@ const Subscription = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Navbar />
       <Container isTablet={isTablet}>
         <HeaderContainer>
           <Title isTablet={isTablet}>فتح ميزات العضوية المميزة</Title>

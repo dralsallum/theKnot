@@ -11,9 +11,8 @@ import { Feather } from "@expo/vector-icons";
 import styled from "styled-components/native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { publicRequest } from "../../requestMethods";
-
-// 1) Import from Redux
 import { useDispatch } from "react-redux";
+import { addToCart } from "../redux/cartSlice";
 import { addProduct, clearFeedbackIcon } from "../redux/registrySlice";
 
 const windowWidth = Dimensions.get("window").width;
@@ -22,6 +21,7 @@ const windowWidth = Dimensions.get("window").width;
 const Container = styled.SafeAreaView`
   flex: 1;
   background-color: #fefefe;
+  direction: rtl;
 `;
 
 const HeaderBar = styled.View`
@@ -40,6 +40,7 @@ const BackButton = styled.TouchableOpacity`
 const ScreenTitle = styled.Text`
   font-size: 20px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const TopIcons = styled.View`
@@ -51,6 +52,7 @@ const ProductCount = styled.Text`
   margin-bottom: 10px;
   font-size: 16px;
   color: #666;
+  text-align: left;
 `;
 
 const ProductCard = styled.View`
@@ -78,6 +80,7 @@ const AwardBadgeText = styled.Text`
   color: #fff;
   font-weight: bold;
   font-size: 12px;
+  text-align: left;
 `;
 
 const ProductImageContainer = styled.View`
@@ -110,17 +113,20 @@ const BrandText = styled.Text`
   font-size: 14px;
   color: #666;
   margin-bottom: 2px;
+  text-align: left;
 `;
 
 const RatingText = styled.Text`
   font-size: 14px;
   color: #666;
+  text-align: left;
 `;
 
 const ProductTitle = styled.Text`
   font-size: 16px;
   font-weight: bold;
   margin-vertical: 4px;
+  text-align: left;
 `;
 
 const PriceRow = styled.View`
@@ -132,6 +138,7 @@ const PriceRow = styled.View`
 const ProductPrice = styled.Text`
   font-size: 16px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const OldPrice = styled.Text`
@@ -139,6 +146,7 @@ const OldPrice = styled.Text`
   color: #999;
   text-decoration-line: line-through;
   margin-left: 8px;
+  text-align: left;
 `;
 
 const CenteredContainer = styled.View`
@@ -152,14 +160,10 @@ const ProductPage = () => {
   const { category } = useLocalSearchParams(); // e.g. "Tabletop"
   const router = useRouter();
   const dispatch = useDispatch(); // 2) Setup dispatch
-
   const screenTitle = category || "Category";
-
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Local ephemeral feedback state for plus/check icons
   const [feedbackIcons, setFeedbackIcons] = useState({});
   const [totalCount, setTotalCount] = useState(0);
 
@@ -190,13 +194,10 @@ const ProductPage = () => {
 
   // 3) Dispatch to Redux plus ephemeral icon feedback
   const handleAdd = (product) => {
-    // Turn on the check icon locally
     setFeedbackIcons((prev) => ({ ...prev, [product._id]: true }));
 
-    // Dispatch Redux action to add product
     dispatch(addProduct(product));
-
-    // Turn icon back to plus after 1 second & clear Redux “feedbackIcon”
+    dispatch(addToCart({ ...product, quantity: 1 }));
     setTimeout(() => {
       setFeedbackIcons((prev) => {
         const updated = { ...prev };
@@ -227,13 +228,12 @@ const ProductPage = () => {
 
     // If feedbackIcons[productId] is true => show check icon
     const isCheckIcon = !!feedbackIcons[_id];
-
     return (
       <TouchableOpacity onPress={() => handleProductPress(_id)}>
         <ProductCard>
           {awardWinner && (
             <AwardBadge>
-              <AwardBadgeText>Award Winner</AwardBadgeText>
+              <AwardBadgeText>الفائز بالجائزة</AwardBadgeText>
             </AwardBadge>
           )}
 
@@ -267,11 +267,11 @@ const ProductPage = () => {
     );
   };
 
-  // Header bar
+  // شريط العنوان
   const renderHeaderBar = () => (
     <HeaderBar>
       <BackButton onPress={() => router.back()}>
-        <Feather name="arrow-left" size={24} color="black" />
+        <Feather name="arrow-right" size={24} color="black" />
       </BackButton>
       <ScreenTitle>{screenTitle}</ScreenTitle>
       <TopIcons>
@@ -289,7 +289,7 @@ const ProductPage = () => {
     <Container>
       {renderHeaderBar()}
 
-      <ProductCount>{totalCount} items</ProductCount>
+      <ProductCount>{totalCount} عنصر</ProductCount>
 
       {loading && (
         <CenteredContainer>

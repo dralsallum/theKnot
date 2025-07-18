@@ -2,7 +2,7 @@
   "expo": {
     "name": "theknot",
     "slug": "theknot",
-    "version": "1.1.7",
+    "version": "1.6.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "theknot",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dralsallum.theknot",
-      "buildNumber": "7",
+      "buildNumber": "47",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -24,8 +24,9 @@
           "NSAllowsArbitraryLoads": true
         },
         "NSPhotoLibraryUsageDescription": "This app requires access to your photo library to upload images.",
-        "NSMicrophoneUsageDescription": "This app needs access to the microphone for audio playback.",
+        "NSMicrophoneUsageDescription": "This app needs access to the microphone for audio playbook.",
         "NSContactsUsageDescription": "This app requires access to your contacts to add guests to your wedding.",
+        "LSApplicationQueriesSchemes": ["about", "https", "http"],
         "SKAdNetworkItems": [
           {
             "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"
@@ -105,14 +106,9 @@
     },
     "plugins": [
       "expo-router",
+      "expo-splash-screen",
       "react-native-iap",
-      [
-        "react-native-appsflyer",
-        {
-          "devKey": "qoAEWsD3N2Eb245wdusrJH",
-          "appId": "6673901781"
-        }
-      ],
+
       "react-native-video",
       "expo-secure-store"
     ],

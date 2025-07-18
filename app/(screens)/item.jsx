@@ -20,6 +20,7 @@ const { width } = Dimensions.get("window");
 const Container = styled.SafeAreaView`
   flex: 1;
   background-color: #ffffff;
+  direction: rtl;
 `;
 
 const CenteredContainer = styled.View`
@@ -52,6 +53,7 @@ const PageIndicatorOverlay = styled.View`
 const PageIndicatorText = styled.Text`
   color: white;
   font-size: 14px;
+  text-align: left;
 `;
 
 const CarouselContainer = styled.View`
@@ -74,12 +76,14 @@ const BrandText = styled.Text`
   font-size: 16px;
   color: #007aff;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const ProductTitle = styled.Text`
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 6px;
+  text-align: left;
 `;
 
 const PriceRow = styled.View`
@@ -91,6 +95,7 @@ const PriceRow = styled.View`
 const ProductPrice = styled.Text`
   font-size: 20px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const ShippingBadge = styled.View`
@@ -104,6 +109,7 @@ const ShippingBadge = styled.View`
 const ShippingBadgeText = styled.Text`
   font-size: 12px;
   color: #333;
+  text-align: left;
 `;
 
 const Divider = styled.View`
@@ -116,6 +122,7 @@ const ColorLabel = styled.Text`
   font-size: 16px;
   font-weight: bold;
   margin-bottom: 6px;
+  text-align: left;
 `;
 
 const ColorOptionRow = styled.View`
@@ -293,24 +300,24 @@ const Item = () => {
 
   return (
     <Container>
-      {/* --- FEEDBACK OVERLAY if isCheck --- */}
+      {/* --- طبقة التغذية الراجعة إذا كان isCheck صحيح --- */}
       {isCheck && (
         <FeedbackOverlay>
           <FeedbackBox>
             <Feather name="check-circle" size={24} color="#fff" />
-            <FeedbackText>Added to Registry!</FeedbackText>
+            <FeedbackText>تمت الإضافة إلى السجل!</FeedbackText>
           </FeedbackBox>
         </FeedbackOverlay>
       )}
 
-      {/* --- IMAGE CAROUSEL --- */}
+      {/* --- عرض الصور المتدرج --- */}
       <View>
-        {/* Back button in top-left corner */}
+        {/* زر الرجوع في الزاوية العلوية اليسرى */}
         <BackOverlay onPress={() => router.back()}>
-          <Feather name="arrow-left" size={24} color="#fff" />
+          <Feather name="arrow-right" size={24} color="#fff" />
         </BackOverlay>
 
-        {/* “x/y” style page indicator in top-right corner */}
+        {/* مؤشر الصفحة بنمط "x/y" في الزاوية العلوية اليمنى */}
         {productImages.length > 0 && (
           <PageIndicatorOverlay>
             <PageIndicatorText>
@@ -341,10 +348,10 @@ const Item = () => {
         </CarouselContainer>
       </View>
 
-      {/* --- CONTENT SCROLL --- */}
+      {/* --- تمرير المحتوى --- */}
       <ScrollView style={{ flex: 1 }}>
         <ContentContainer>
-          <BrandText>By {brand}</BrandText>
+          <BrandText>من {brand}</BrandText>
           <ProductTitle>{name}</ProductTitle>
           <PriceRow>
             <ProductPrice>${price?.toFixed(2)}</ProductPrice>
@@ -357,8 +364,8 @@ const Item = () => {
 
           <Divider />
 
-          {/* Color selection */}
-          <ColorLabel>Color: {displayedColor}</ColorLabel>
+          {/* اختيار اللون */}
+          <ColorLabel>اللون: {displayedColor}</ColorLabel>
           <ColorOptionRow>
             {colors.map((c) => {
               const isSelected = displayedColor === c;
@@ -376,17 +383,17 @@ const Item = () => {
         </ContentContainer>
       </ScrollView>
 
-      {/* --- FIXED BOTTOM BUTTON --- */}
+      {/* --- زر السفل الثابت --- */}
       <BottomBar>
         <AddToRegistryButton
           onPress={() => handleAddProduct(product)}
           style={{
-            backgroundColor: isCheck ? "#333" : "#ec4899", // if added => grey
+            backgroundColor: isCheck ? "#333" : "#ec4899", // إذا تمت الإضافة => رمادي
           }}
-          disabled={isCheck} // disable button if just added
+          disabled={isCheck} // تعطيل الزر إذا تمت الإضافة للتو
         >
           <AddToRegistryText>
-            {isCheck ? "Added!" : "Add to Registry"}
+            {isCheck ? "تمت الإضافة!" : "إضافة إلى الرغبات"}
           </AddToRegistryText>
         </AddToRegistryButton>
       </BottomBar>

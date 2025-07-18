@@ -16,6 +16,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { publicRequest, createUserRequest } from "../../requestMethods";
+import ArrowCirce from "../../assets/icons/arrowCircle.png";
+const Popular = require("../../assets/images/popularGift.png");
 
 /* Example icons/images – replace with your own */
 const gearIcon = require("../../assets/icons/gear.png");
@@ -23,24 +25,18 @@ const bellIcon = require("../../assets/icons/notification.png");
 const cameraIcon = require("../../assets/icons/camera.png");
 const couplePhoto = require("../../assets/icons/couple.png");
 const budgetChart = require("../../assets/icons/budget.png");
-
+const Essential = require("../../assets/images/essential.png");
 /* Venues */
 const venue1 = require("../../assets/images/venue.jpg");
 const venue2 = require("../../assets/images/venue.jpg");
 const venue3 = require("../../assets/images/venue.jpg");
-
-/* Other images */
-const weddingCakeImg = require("../../assets/images/cake.webp");
+const weddingCakeImg = require("../../assets/images/cake.png");
 const saveTheDateSticker = require("../../assets/images/announcement.jpg");
-const registryIconsImg = require("../../assets/images/registry.jpg");
-const invitationsImg = require("../../assets/images/cake.webp");
-const detailsImg = require("../../assets/images/cake.webp");
-
-/* Style quiz images + icons (example placeholders) */
-const styleQuizImg = require("../../assets/images/flowers.webp");
+const registryIconsImg = require("../../assets/images/registry.png");
+const invitationsImg = require("../../assets/images/orange.png");
+const detailsImg = require("../../assets/images/detail.png");
 const heartIcon = require("../../assets/icons/heart.png");
 const heartFilledIcon = require("../../assets/icons/empty-heart.png");
-const closeIcon = require("../../assets/icons/cross.png");
 
 /* --------------------------------
  * CollapsibleCard Component
@@ -48,11 +44,19 @@ const closeIcon = require("../../assets/icons/cross.png");
 const CollapsibleCard = ({
   title,
   description,
+  subDes,
+  subTitle,
+  mainExtra,
+  extra,
   backgroundColor,
   imageSource,
   expanded,
   setExpanded,
   items = [],
+  handleClicked,
+  handleSecond,
+  handleGuest,
+  handleLast,
 }) => {
   // Collapsed view
   if (!expanded) {
@@ -61,7 +65,10 @@ const CollapsibleCard = ({
         <TouchableOpacity onPress={() => setExpanded(true)}>
           <CollapsedRow>
             <CollapsedTextContainer>
-              <CollapsedTitle>{title} ▾</CollapsedTitle>
+              <ExtraView>
+                <CollapsedTitle>{title} </CollapsedTitle>
+                <ArrowDown source={ArrowCirce} />
+              </ExtraView>
               <CollapsedDesc>{description}</CollapsedDesc>
             </CollapsedTextContainer>
             <CollapsedImage source={imageSource} resizeMode="contain" />
@@ -72,49 +79,48 @@ const CollapsibleCard = ({
   }
 
   // Expanded layout example
-  if (["Announcements", "Details", "Invitations", "Registry"].includes(title)) {
+  if (["الإعلانات", "التفاصيل", "الدعوات", "قائمة الهدايا"].includes(title)) {
     return (
       <ExpandedAnnouncementsContainer style={{ backgroundColor }}>
         <AnnouncementHeading>{title}</AnnouncementHeading>
         <AnnouncementSubtitle>{description}</AnnouncementSubtitle>
 
         <MatchingDesignsTitle>
-          Matching designs to fit your style
+          مطابقة التصاميم لتناسب أسلوبك
         </MatchingDesignsTitle>
         <TwoItemRow>
-          <DesignCard>
+          <DesignCard onPress={handleClicked}>
             <DesignImage source={items[0]?.image} resizeMode="cover" />
             <DesignLabel>{items[0]?.title}</DesignLabel>
           </DesignCard>
-          <DesignCard>
+          <DesignCard onPress={handleSecond}>
             <DesignImage source={items[1]?.image} resizeMode="cover" />
             <DesignLabel>{items[1]?.title}</DesignLabel>
           </DesignCard>
         </TwoItemRow>
 
         <PinkButton onPress={() => setExpanded(false)}>
-          <PinkButtonText>Browse save the dates</PinkButtonText>
+          <PinkButtonText>اخفاء التفاصيل</PinkButtonText>
         </PinkButton>
 
-        <BeforeTitle>Before you send save the dates</BeforeTitle>
+        <BeforeTitle>قبل إرسال بطاقات حفظ التاريخ</BeforeTitle>
         <BulletItemContainer>
           <BulletIcon />
           <BulletText>
-            <BulletTitle>Start your website</BulletTitle>
-            <BulletDescription>
-              Make it easy for guests to RSVP and find all your wedding details
-              in one place.
-            </BulletDescription>
+            <TouchableOpacity onPress={handleGuest}>
+              <BulletTitle>{subTitle} </BulletTitle>
+              <BulletDescription>{subDes}</BulletDescription>
+            </TouchableOpacity>
           </BulletText>
         </BulletItemContainer>
 
         <BulletItemContainer>
           <BulletIcon />
           <BulletText>
-            <BulletTitle>Make your guest list</BulletTitle>
-            <BulletDescription>
-              Keep your guest addresses and plan your invites in minutes.
-            </BulletDescription>
+            <TouchableOpacity onPress={handleLast}>
+              <BulletTitle>{mainExtra}</BulletTitle>
+              <BulletDescription>{extra}</BulletDescription>
+            </TouchableOpacity>
           </BulletText>
         </BulletItemContainer>
       </ExpandedAnnouncementsContainer>
@@ -126,69 +132,107 @@ const CollapsibleCard = ({
 };
 
 /* --------------------------------
+ * Service provider
+ * -------------------------------- */
+
+/* --------------------------------
  * ChecklistCardComponent
  * -------------------------------- */
 const ChecklistCardComponent = ({ navigateToChecklist }) => {
-  const currentUser = useSelector((state) => state.user.currentUser);
-  const userId = currentUser?._id;
+  const userId = useSelector((s) => s.user.currentUser?._id);
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [state, setState] = useState({ loading: true, error: null });
+
+  // مثل الدالة الموجودة في شاشة Checklist
+  const handleToggleCompleted = async (task) => {
+    try {
+      const newStatus = !task.isCompleted;
+
+      // تحديث تفاؤلي
+      setTasks((prev) =>
+        prev.map((t) =>
+          t._id === task._id ? { ...t, isCompleted: newStatus } : t
+        )
+      );
+
+      // طلب PATCH
+      await createUserRequest().patch(
+        `/users/${userId}/checklist/${task._id}`,
+        { isCompleted: newStatus }
+      );
+    } catch (err) {
+      console.error("toggle error", err);
+      // التراجع عند الفشل
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
+      Alert.alert("خطأ", "فشل تحديث المهمة");
+    }
+  };
 
   useEffect(() => {
-    const fetchChecklist = async () => {
-      if (!userId) return;
+    if (!userId) return;
+
+    (async () => {
       try {
-        const res = await createUserRequest().get(`/checklist/${userId}`);
-        const allTasks = res.data;
-        const tasksWithDue = allTasks.filter((task) => task.due);
-        tasksWithDue.sort(
-          (a, b) => new Date(a.due).getTime() - new Date(b.due).getTime()
+        const { data } = await createUserRequest().get(
+          `/users/${userId}/checklist`
         );
-        setTasks(tasksWithDue.slice(0, 4));
+        /* ننتقى أقرب 4 مهام غير مكتملة لها تاريخ استحقاق */
+        const upcoming = (data.checklist || [])
+          .filter((t) => t.due && !t.isCompleted)
+          .sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime())
+          .slice(0, 4);
+
+        setTasks(upcoming);
+        setState({ loading: false, error: null });
       } catch (err) {
-        console.error("Error fetching checklist tasks:", err);
-        setError("Failed to fetch checklist tasks.");
-      } finally {
-        setLoading(false);
+        console.error("ChecklistCard fetch error:", err);
+        setState({ loading: false, error: "فشل تحميل المهام" });
       }
-    };
-    fetchChecklist();
+    })();
   }, [userId]);
 
-  if (loading) {
+  /* ---------------- RENDER -------------- */
+  if (state.loading)
     return (
       <ChecklistCard>
         <ActivityIndicator size="large" color="#ec4899" />
       </ChecklistCard>
     );
-  }
 
-  if (error) {
+  if (state.error)
     return (
       <ChecklistCard>
-        <Text style={{ color: "red" }}>{error}</Text>
+        <Text style={{ color: "red", textAlign: "center" }}>{state.error}</Text>
       </ChecklistCard>
     );
-  }
 
   return (
     <ChecklistCard>
       <ChecklistHeaderRow>
         <ChecklistTitleRow>
           <ChecklistIcon source={require("../../assets/icons/gear.png")} />
-          <ChecklistTitle>Next on your checklist</ChecklistTitle>
+          <ChecklistTitle>المهمة التالية لك</ChecklistTitle>
         </ChecklistTitleRow>
+
         <TouchableOpacity onPress={navigateToChecklist}>
-          <SeeAllTasksText>See all tasks</SeeAllTasksText>
+          <SeeAllTasksText>رؤية كل المهام</SeeAllTasksText>
         </TouchableOpacity>
       </ChecklistHeaderRow>
-      {tasks.map((task) => (
-        <TaskItem key={task._id}>
-          <TaskBullet />
-          <TaskLabel>{task.title}</TaskLabel>
-        </TaskItem>
-      ))}
+
+      {tasks.length === 0 ? (
+        <Text
+          style={{ paddingVertical: 8, textAlign: "center", color: "#666" }}
+        >
+          لا توجد مهام قادمة
+        </Text>
+      ) : (
+        tasks.map((t) => (
+          <TaskItem key={t._id} onPress={() => handleToggleCompleted(t)}>
+            <TaskBullet completed={t.isCompleted} />
+            <TaskLabel completed={t.isCompleted}>{t.title}</TaskLabel>
+          </TaskItem>
+        ))
+      )}
     </ChecklistCard>
   );
 };
@@ -202,21 +246,15 @@ const Home = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const isAuthenticated = !!currentUser; // for favorites check
   const userId = currentUser?._id;
-
-  // local arrays for heart-likes (IDs)
   const [favoriteVendors, setFavoriteVendors] = useState([]);
-  // store the full vendor objects, not just IDs
   const [favoriteVendorData, setFavoriteVendorData] = useState([]);
-
-  const [customPhoto, setCustomPhoto] = useState(
-    currentUser?.profileImage || null
-  );
-
+  const [attendingShow, setAttendingShow] = useState(false);
   const [venues, setVenues] = useState([]);
   const [vendors, setVendors] = useState([]);
+  const [name, setName] = useState(false);
+  const [partnerName, setPartnerName] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [showVenues, setShowVenues] = useState(false);
   const [showVendors, setShowVendors] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
@@ -226,6 +264,9 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState("photographers");
   const [modalVisible, setModalVisible] = useState(false);
   const [inputDate, setInputDate] = useState("");
+  const [customPhoto, setCustomPhoto] = useState(
+    currentUser?.profileImage || null
+  );
   const [weddingInfo, setWeddingInfo] = useState({
     weddingDate: null,
     weddingLocation: null,
@@ -247,7 +288,7 @@ const Home = () => {
             setInputDate(new Date(res.data.weddingDate).toLocaleDateString());
           }
         } catch (err) {
-          console.log("Error fetching wedding info:", err);
+          setError("Failed to fetch checklist tasks.");
         }
       };
       fetchWeddingInfo();
@@ -266,24 +307,39 @@ const Home = () => {
     { id: "venues", name: "Venues" },
   ];
 
-  // Fetch the user's *favorite vendors* (full objects) + store IDs
+  useEffect(() => {
+    const fetchName = async () => {
+      if (!isAuthenticated || !userId) return;
+      try {
+        const userReq = createUserRequest();
+        const response = await userReq.get(`/users/find/${userId}`);
+        setName(response.data.firstName);
+        setPartnerName(response.data.partnerName);
+      } catch {
+        setError("Failed to fetch checklist tasks.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchName();
+  }, [isAuthenticated, userId]);
+
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!isAuthenticated || !userId) return;
       try {
+        setLoading(true);
         const userReq = createUserRequest();
         const response = await userReq.get(`/users/${userId}/favorites`);
 
-        // This is the full array of favorite vendor objects
         setFavoriteVendorData(response.data);
 
         // Also store just the IDs if you need them for heart toggling
         const favoriteIds = response.data.map((vendor) => vendor._id);
         setFavoriteVendors(favoriteIds);
-
-        console.log("Favorites loaded:", favoriteIds.length);
       } catch (err) {
-        console.error("Error fetching favorites:", err);
+        setError("Failed to fetch checklist tasks.");
       }
     };
     fetchFavorites();
@@ -298,7 +354,6 @@ const Home = () => {
         setVendors(res.data);
       } catch (err) {
         setError(`Failed to fetch ${category} vendors.`);
-        console.log(err);
       } finally {
         setLoading(false);
       }
@@ -316,7 +371,6 @@ const Home = () => {
           setVenues(res.data);
         } catch (err) {
           setError("Failed to fetch venues.");
-          console.log(err);
         } finally {
           setLoading(false);
         }
@@ -358,7 +412,6 @@ const Home = () => {
         await userReq.post(`/users/${userId}/favorites`, { vendorId });
       }
     } catch (err) {
-      console.log("Error toggling favorite vendor:", err);
       // Revert local state on error
       if (isFavorited) {
         setFavoriteVendors([...favoriteVendors, vendorId]);
@@ -401,7 +454,6 @@ const Home = () => {
         await userReq.post(`/users/${userId}/favorites`, { vendorId: venueId });
       }
     } catch (err) {
-      console.log("Error toggling favorite venue:", err);
       if (isFavorited) {
         setFavoriteVendors([...favoriteVendors, venueId]);
       } else {
@@ -427,23 +479,8 @@ const Home = () => {
     });
   };
 
-  const navigateToBudget = () => {
-    router.push("/budget");
-  };
-
-  const navigateToGuest = () => {
-    router.push("/guest");
-  };
-  const navigateToNotification = () => {
-    router.push("/notification");
-  };
-
-  const navigateToSetting = () => {
-    router.push("/setting");
-  };
-
-  const navigateToChecklist = () => {
-    router.push("/checklist");
+  const navigateBasic = (destination) => {
+    router.push(destination);
   };
 
   // open image library
@@ -526,10 +563,56 @@ const Home = () => {
         setInputDate(parsedDate.toLocaleDateString());
       }
     } catch (err) {
-      console.error("Error updating wedding date:", err);
       Alert.alert("Update error", "Error updating the wedding date.");
     }
     setModalVisible(false);
+  };
+
+  const handleProductPress = (productId) => {
+    router.push(`/(screens)/item?productId=${productId}`);
+  };
+  const handleRoutePress = (productId) => {
+    router.push(productId);
+  };
+
+  const VendorCategory = ({ title, subTitle, subCategory }) => {
+    // normalize to lowercase once
+    const key = subCategory.toLowerCase();
+
+    const savedCount = favoriteVendorData.filter(
+      (vendor) => vendor.category && vendor.category.toLowerCase() === key
+    ).length;
+
+    return (
+      <VendorCategoryWrapper>
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: "/category",
+              params: { category: subCategory },
+            });
+          }}
+        >
+          <CategoryCircle>
+            <Text
+              style={{
+                fontSize: 32,
+                color: "#ff69b4",
+                fontWeight: "300",
+              }}
+            >
+              +
+            </Text>
+          </CategoryCircle>
+
+          <CategoryTitle>{title}</CategoryTitle>
+          <CategorySaved>
+            {savedCount} {subTitle}
+          </CategorySaved>
+          <CategoryMessages>0 رسائل</CategoryMessages>
+        </TouchableOpacity>
+      </VendorCategoryWrapper>
+    );
   };
 
   /* -------------------------
@@ -540,17 +623,25 @@ const Home = () => {
       <Content>
         {/* Top Row */}
         <TopRow>
-          <IconButton onPress={navigateToSetting}>
+          <IconButton
+            onPress={() => {
+              navigateBasic("/setting");
+            }}
+          >
             <Image source={gearIcon} style={{ width: 24, height: 24 }} />
           </IconButton>
 
           <AddWeddingDate onPress={handleAddWeddingDate}>
             {weddingInfo.weddingDate
-              ? `${calculateDaysLeft(weddingInfo.weddingDate)} days to go`
-              : "+ Add wedding date"}
+              ? `${calculateDaysLeft(weddingInfo.weddingDate)} يوم متبقي`
+              : "+ إضافة تاريخ الزفاف"}
           </AddWeddingDate>
 
-          <IconButton onPress={navigateToNotification}>
+          <IconButton
+            onPress={() => {
+              navigateBasic("/notification");
+            }}
+          >
             <Image source={bellIcon} style={{ width: 24, height: 24 }} />
           </IconButton>
         </TopRow>
@@ -558,7 +649,9 @@ const Home = () => {
         {/* Couple Section */}
         <CoupleSection>
           <LeftCol>
-            <CoupleNames>Saud & Sara</CoupleNames>
+            <CoupleNames>
+              {name} و {partnerName}
+            </CoupleNames>
 
             <WeddingInfoRow>
               <WeddingInfoIcon
@@ -567,7 +660,7 @@ const Home = () => {
               <WeddingInfoText>
                 {weddingInfo.weddingDate
                   ? new Date(weddingInfo.weddingDate).toLocaleDateString()
-                  : "+ Add wedding date"}
+                  : "+ إضافة تاريخ الزفاف"}
               </WeddingInfoText>
             </WeddingInfoRow>
 
@@ -575,7 +668,9 @@ const Home = () => {
               <LocationIcon
                 source={require("../../assets/icons/location.png")}
               />
-              <LocationText>Tangier, 01</LocationText>
+              <LocationText>
+                {weddingInfo.weddingCountry}, {weddingInfo.weddingLocation}
+              </LocationText>
             </LocationRow>
           </LeftCol>
 
@@ -593,11 +688,15 @@ const Home = () => {
         </CoupleSection>
 
         {/* Budget Advisor Card */}
-        <BudgetCard onPress={navigateToBudget}>
+        <BudgetCard
+          onPress={() => {
+            navigateBasic("/budget");
+          }}
+        >
           <BudgetTextContainer>
-            <BudgetTitle>Budget Advisor</BudgetTitle>
+            <BudgetTitle>مستشار الميزانية</BudgetTitle>
             <BudgetSubtitle>
-              Explore real wedding costs in your area.
+              استكشف تكاليف الزفاف الحقيقية في منطقتك.
             </BudgetSubtitle>
           </BudgetTextContainer>
           <BudgetChartImg source={budgetChart} />
@@ -609,9 +708,13 @@ const Home = () => {
             <TouchableOpacity onPress={() => setShowVenues(true)}>
               <VenuesRowCollapsed>
                 <VenuesTextContainer>
-                  <VenuesTitle>Venues ▾</VenuesTitle>
+                  <ExtraView>
+                    <VenuesTitle>أماكن الزفاف</VenuesTitle>
+                    <ArrowDown source={ArrowCirce} />
+                  </ExtraView>
+
                   <VenuesDesc>
-                    Find your kind of place for the celebration to go down.
+                    ابحث عن المكان المناسب لإقامة حفل الزفاف.
                   </VenuesDesc>
                 </VenuesTextContainer>
                 <VenuesImg source={venue1} resizeMode="cover" />
@@ -623,7 +726,7 @@ const Home = () => {
         {/* Venues Expanded */}
         {showVenues && (
           <>
-            <VenuesHeader>Venue Explore</VenuesHeader>
+            <VenuesHeader>استكشاف أماكن الزفاف</VenuesHeader>
             <VenuesWrapper>
               <VenuesRow>
                 <CardScroll horizontal showsHorizontalScrollIndicator={false}>
@@ -675,12 +778,14 @@ const Home = () => {
 
                           <VenueCardContent>
                             <VenueTitle>{venue.name}</VenueTitle>
+
                             <VenueRating>
                               ⭐ {venue.rating} ({venue.numReviews || 0})
                             </VenueRating>
                             <VenueLocation>{venue.location}</VenueLocation>
                             <VenueExtra>
-                              {venue.guestRange || "N/A"} • {venue.priceRange}
+                              {venue.guestRange || "غير متاح"} •{" "}
+                              {venue.priceRange}
                             </VenueExtra>
                             {venue.badges?.map((badge) => (
                               <Badge key={badge}>{badge}</Badge>
@@ -693,11 +798,20 @@ const Home = () => {
             </VenuesWrapper>
 
             <ExploreButton onPress={() => setShowVenues(false)}>
-              <ExploreButtonText>Hide venues</ExploreButtonText>
+              <ExploreButtonText>إخفاء أماكن الزفاف</ExploreButtonText>
             </ExploreButton>
 
-            <HelpSectionTitle>To help with your search</HelpSectionTitle>
-            <LinkText>Booked your venue? Add venue info</LinkText>
+            <HelpSectionTitle>للمساعدة في البحث</HelpSectionTitle>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/category",
+                  params: { category: selectedCategory },
+                })
+              }
+            >
+              <LinkText>هل حجزت مكان الزفاف؟ أضف معلومات المكان</LinkText>
+            </TouchableOpacity>
           </>
         )}
 
@@ -707,9 +821,12 @@ const Home = () => {
             <TouchableOpacity onPress={() => setShowVendors(true)}>
               <VendorsRow>
                 <VendorsTextContainer>
-                  <VendorsTitle>Vendors ▾</VendorsTitle>
+                  <ExtraView>
+                    <VendorsTitle>مزودي الخدمات </VendorsTitle>
+                    <ArrowDown source={ArrowCirce} />
+                  </ExtraView>
                   <VendorsDesc>
-                    Get in touch with photographers, DJs, florists and more.
+                    تواصل مع المصورين، منسقي الموسيقى، منسقي الزهور والمزيد.
                   </VendorsDesc>
                 </VendorsTextContainer>
                 <VendorsImg source={weddingCakeImg} />
@@ -718,7 +835,7 @@ const Home = () => {
           </VendorsSection>
         ) : (
           <>
-            <VenuesHeader>Vendors explore</VenuesHeader>
+            <VenuesHeader>استكشاف مزودي الخدمات</VenuesHeader>
 
             {/* Vendor Category horizontal scroll */}
             <CategoryList
@@ -793,7 +910,8 @@ const Home = () => {
                           </VenueRating>
                           <VenueLocation>{vendor.location}</VenueLocation>
                           <VenueExtra>
-                            {vendor.guestRange || "N/A"} • {vendor.priceRange}
+                            {vendor.guestRange || "غير متاح"} •{" "}
+                            {vendor.priceRange}
                           </VenueExtra>
                           {vendor.badges?.map((badge) => (
                             <Badge key={badge}>{badge}</Badge>
@@ -813,29 +931,29 @@ const Home = () => {
                 }
               >
                 <SeeAllText>
-                  See all{" "}
+                  شاهد الكل
                   {vendorCategories
                     .find((c) => c.id === selectedCategory)
                     ?.name.toLowerCase()}
                 </SeeAllText>
               </SeeAllButton>
 
-              <VenuesSubHeader>As you look for vendors</VenuesSubHeader>
+              <VenuesSubHeader>أثناء بحثك عن مزودي الخدمات</VenuesSubHeader>
 
-              <BudgetEstimatesCard>
-                <Text
-                  style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}
-                >
-                  See budget estimates
-                </Text>
-                <Text style={{ fontSize: 16, color: "#333" }}>
-                  Get a breakdown of how much couples spend on each vendor.
-                </Text>
+              <BudgetEstimatesCard
+                onPress={() => {
+                  navigateBasic("/budget");
+                }}
+              >
+                <SeeText>شاهد تقديرات الميزانية</SeeText>
+                <SeeSubText>
+                  احصل على تفصيل لما ينفقه الأزواج على كل مزود خدمة.
+                </SeeSubText>
               </BudgetEstimatesCard>
 
               <VendorsManagementRow>
                 <Text style={{ fontSize: 24, fontWeight: "700" }}>
-                  Your vendors
+                  مزودي الخدمات بك
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
@@ -843,7 +961,7 @@ const Home = () => {
                   }}
                 >
                   <Text style={{ fontSize: 16, color: "#0066cc" }}>
-                    Manage vendors
+                    إدارتهم
                   </Text>
                 </TouchableOpacity>
               </VendorsManagementRow>
@@ -851,117 +969,35 @@ const Home = () => {
               {/* ------------------------------------------
                   VendorCategoriesContainer section
                   ------------------------------------------ */}
-              <VendorCategoriesContainer>
-                <TouchableOpacity
-                  onPress={() => {
-                    router.push({
-                      pathname: "/category",
-                      params: { category: "photographers" },
-                    });
-                  }}
-                >
-                  <VendorCategoryWrapper>
-                    <CategoryCircle>
-                      <Text
-                        style={{
-                          fontSize: 32,
-                          color: "#ff69b4",
-                          fontWeight: "300",
-                        }}
-                      >
-                        +
-                      </Text>
-                    </CategoryCircle>
-                    <CategoryTitle>Photographers</CategoryTitle>
-                    <CategorySaved>
-                      {
-                        favoriteVendorData.filter(
-                          (vendorObj) =>
-                            vendorObj.category &&
-                            vendorObj.category.toLowerCase() === "photographers"
-                        ).length
-                      }{" "}
-                      saved
-                    </CategorySaved>
-                    <CategoryMessages>0 messages</CategoryMessages>
-                  </VendorCategoryWrapper>
-                </TouchableOpacity>
 
+              <VendorCategoriesContainer
+                onPress={() => {
+                  router.push({
+                    pathname: "/category",
+                    params: { category: "photographers" },
+                  });
+                }}
+              >
                 {/* Bridal Salons */}
-                <TouchableOpacity
-                  onPress={() => {
-                    router.push({
-                      pathname: "/category",
-                      params: { category: "bridal" },
-                    });
-                  }}
-                >
-                  <VendorCategoryWrapper>
-                    <CategoryCircle>
-                      <Text
-                        style={{
-                          fontSize: 32,
-                          color: "#ff69b4",
-                          fontWeight: "300",
-                        }}
-                      >
-                        +
-                      </Text>
-                    </CategoryCircle>
-                    <CategoryTitle>Bridal Salons</CategoryTitle>
-                    <CategorySaved>
-                      {
-                        favoriteVendorData.filter(
-                          (vendorObj) =>
-                            vendorObj.category &&
-                            vendorObj.category.toLowerCase() === "bridal"
-                        ).length
-                      }{" "}
-                      saved
-                    </CategorySaved>
-                    <CategoryMessages>0 messages</CategoryMessages>
-                  </VendorCategoryWrapper>
-                </TouchableOpacity>
-
-                {/* Caterers */}
-                <TouchableOpacity
-                  onPress={() => {
-                    router.push({
-                      pathname: "/category",
-                      params: { category: "caterer" },
-                    });
-                  }}
-                >
-                  <VendorCategoryWrapper>
-                    <CategoryCircle>
-                      <Text
-                        style={{
-                          fontSize: 32,
-                          color: "#ff69b4",
-                          fontWeight: "300",
-                        }}
-                      >
-                        +
-                      </Text>
-                    </CategoryCircle>
-                    <CategoryTitle>Caterers</CategoryTitle>
-                    <CategorySaved>
-                      {
-                        favoriteVendorData.filter(
-                          (vendorObj) =>
-                            vendorObj.category &&
-                            vendorObj.category.toLowerCase() === "caterer"
-                        ).length
-                      }{" "}
-                      saved
-                    </CategorySaved>
-                    <CategoryMessages>0 messages</CategoryMessages>
-                  </VendorCategoryWrapper>
-                </TouchableOpacity>
+                <VendorCategory
+                  title="المصورون"
+                  subTitle="محفوظ"
+                  subCategory="photographers"
+                />
+                <VendorCategory
+                  title="صالونات العرائس"
+                  subTitle="محفوظ"
+                  subCategory="bridal"
+                />
+                <VendorCategory
+                  title="متعهدي الطعام"
+                  subTitle="محفوظ"
+                  subCategory="caterer"
+                />
               </VendorCategoriesContainer>
 
               <ExploreButton onPress={() => setShowVendors(false)}>
-                <ExploreButtonText>Hide vendors</ExploreButtonText>
+                <ExploreButtonText>إخفاء مزودي الخدمات</ExploreButtonText>
               </ExploreButton>
             </VenuesWrapper>
           </>
@@ -969,116 +1005,184 @@ const Home = () => {
 
         {/* Announcements Section */}
         <CollapsibleCard
-          title="Announcements"
-          description="Start spreading the word with save the dates and a free website."
+          title="الإعلانات"
+          subTitle="أنشئ قائمة ضيوفك "
+          mainExtra="الرد على الدعوة"
+          subDes="ابدأ في نشر الخبر مع حفظ التواريخ وموقع مجاني."
+          description="اعرف بالضبط من سيحضر زواجك قبل ان تبدا التحضير له"
+          extra="احتفظ بعناوين ضيوفك وخطط لدعواتك خلال دقائق"
           backgroundColor="#fff"
           imageSource={saveTheDateSticker}
           expanded={showAnnouncements}
           setExpanded={setShowAnnouncements}
+          handleClicked={() => handleProductPress("6846ee45c6d5edc83794caad")}
+          handleSecond={() => handleProductPress("6846ee45c6d5edc83794caad")}
+          handleGuest={() => {
+            navigateBasic("/guest");
+          }}
+          handleLast={() => {
+            navigateBasic("/guest");
+          }}
           items={[
             {
               image: saveTheDateSticker,
-              title: "Save the Dates",
+              title: "احفظ التاريخ",
             },
             {
               image: weddingCakeImg,
-              title: "Wedding Website",
+              title: "مستلزمات المنزل",
             },
           ]}
         />
 
         {/* Registry */}
         <CollapsibleCard
-          title="Registry"
-          description="Make it easy for guests to find every gift you want in one place."
+          title="قائمة الهدايا"
+          subTitle="اغراض المنزل"
+          subDes="هدايا الضيوف ليس من الضروري ان تكون عشواية حددها لهم"
+          mainExtra="مساهمة الناس"
+          description="اجعل من السهل على الضيوف العثور على كل هدية تريدها في مكان واحد."
+          extra="اجعل من السهل على الضيوف المساهمة في زواجك والعثور على جميع تفاصيل
+               في مكان واحد"
           backgroundColor="#a0d9ff"
           imageSource={registryIconsImg}
           expanded={showRegistry}
           setExpanded={setShowRegistry}
+          handleClicked={() => handleRoutePress("stories")}
+          handleSecond={() => handleRoutePress("stories")}
+          handleGuest={() => {
+            navigateBasic("/stories");
+          }}
+          handleLast={() => {
+            navigateBasic("/guest");
+          }}
           items={[
             {
-              image: saveTheDateSticker,
-              title: "Save the Dates",
+              image: Popular,
+              title: "اكثر الهدايا المرغوبة",
             },
             {
-              image: weddingCakeImg,
-              title: "Wedding Website",
+              image: Essential,
+              title: "الاغراض الاساسية",
             },
           ]}
         />
 
         {/* Invitations */}
         <CollapsibleCard
-          title="Invitations"
-          description="Create beautiful invitations that fit your budget and feel like you."
+          title="الدعوات"
+          description="أنشئ دعوات جميلة تناسب ميزانيتك وتشعر وكأنها أنت."
+          subTitle="أنشئ قائمة ضيوفك "
+          mainExtra="الرد على الدعوة"
+          subDes="ابدأ في نشر الخبر مع حفظ التواريخ وموقع مجاني."
+          extra="احتفظ بعناوين ضيوفك وخطط لدعواتك خلال دقائق"
           backgroundColor="#ff9000"
           imageSource={invitationsImg}
           expanded={showInvitations}
           setExpanded={setShowInvitations}
+          handleClicked={() => handleProductPress("6846ee45c6d5edc83794caad")}
+          handleSecond={() => handleRoutePress("stories")}
+          handleGuest={() => {
+            navigateBasic("/guest");
+          }}
+          handleLast={() => {
+            navigateBasic("/guest");
+          }}
           items={[
             {
               image: saveTheDateSticker,
-              title: "Save the Dates",
+              title: "بطاقة الزواج",
             },
             {
               image: weddingCakeImg,
-              title: "Wedding Website",
+              title: "موقع الزفاف",
             },
           ]}
         />
 
         {/* Details */}
         <CollapsibleCard
-          title="Details"
-          description="From place cards to guest books, details add distinction to your day."
+          title="التفاصيل"
+          description="من بطاقات الأماكن إلى كتب الضيوف، التفاصيل تضيف تميزاً ليومك."
+          subTitle="أنشئ قائمة ضيوفك "
+          mainExtra="الرد على الدعوة"
+          subDes="ابدأ في نشر الخبر مع حفظ التواريخ وموقع مجاني."
+          extra="احتفظ بعناوين ضيوفك وخطط لدعواتك خلال دقائق"
           backgroundColor="#fff"
           imageSource={detailsImg}
           expanded={showDetails}
           setExpanded={setShowDetails}
+          handleClicked={() => handleProductPress("6846ee45c6d5edc83794caad")}
+          handleSecond={() => handleRoutePress("stories")}
+          handleGuest={() => {
+            navigateBasic("/guest");
+          }}
+          handleLast={() => {
+            navigateBasic("/guest");
+          }}
           items={[
             {
               image: saveTheDateSticker,
-              title: "Save the Dates",
+              title: "اختار الورد",
             },
             {
               image: weddingCakeImg,
-              title: "Wedding Website",
+              title: "اختار المغنية",
             },
           ]}
         />
 
         {/* YOUR WEDDING */}
-        <YourWeddingTitle>YOUR WEDDING</YourWeddingTitle>
+        <YourWeddingTitle>زفافك</YourWeddingTitle>
 
         {/* Next on your checklist */}
-        <ChecklistCardComponent navigateToChecklist={navigateToChecklist} />
+        <ChecklistCardComponent
+          navigateToChecklist={() => {
+            navigateBasic("/checklist");
+          }}
+        />
 
         {/* Guests & RSVPs */}
         <GuestsCard>
           <GuestsHeaderRow>
             <GuestsTitleRow>
               <GuestsIcon source={gearIcon} />
-              <GuestsTitle>Guests & RSVPs</GuestsTitle>
+              <GuestsTitle>الضيوف والردود</GuestsTitle>
             </GuestsTitleRow>
-            <TouchableOpacity onPress={navigateToGuest}>
-              <AddGuestsLink>Add guests</AddGuestsLink>
+            <TouchableOpacity
+              onPress={() => {
+                navigateBasic("/guest");
+              }}
+            >
+              <AddGuestsLink>إضافة ضيوف</AddGuestsLink>
             </TouchableOpacity>
           </GuestsHeaderRow>
 
           <GuestsCountRow>
             <GuestsCountNumber>0</GuestsCountNumber>
-            <GuestsCountLabel>guests</GuestsCountLabel>
+            <GuestsCountLabel>ضيف</GuestsCountLabel>
           </GuestsCountRow>
+          {attendingShow ? (
+            <AcceptCountRow>
+              <DetailCountRow>
+                <Text>0</Text>
+                <Text>رفض</Text>
+              </DetailCountRow>
+              <DetailCountRow>
+                <Text>0</Text>
+                <Text>وافق</Text>
+              </DetailCountRow>
+            </AcceptCountRow>
+          ) : null}
           <GuestsDesc>
-            Keep all your guest info and RSVPs organized for every event.
+            احتفظ بجميع معلومات ضيوفك وردودهم منظمة لكل حدث.
           </GuestsDesc>
         </GuestsCard>
 
         {/* Quote Section */}
         <QuoteSection>
           <QuoteText>
-            “I love you for all that you are, all that you have been and all you
-            will be.”
+            "أحبك لكل ما أنت عليه، وكل ما كنت عليه وكل ما ستكون عليه."
           </QuoteText>
           <QuoteDecorRow>
             <DecorIcon source={heartIcon} />
@@ -1110,7 +1214,7 @@ const Home = () => {
               }}
             >
               <Text style={{ fontSize: 18, marginBottom: 10 }}>
-                Enter Wedding Date
+                أدخل تاريخ الزفاف
               </Text>
               <TextInput
                 style={{
@@ -1120,13 +1224,13 @@ const Home = () => {
                   marginBottom: 10,
                   paddingHorizontal: 10,
                 }}
-                placeholder="MM/DD/YYYY"
+                placeholder="شهر/يوم/سنة"
                 value={inputDate}
                 onChangeText={setInputDate}
               />
-              <Button title="Confirm" onPress={handleConfirmDate} />
+              <Button title="تأكيد" onPress={handleConfirmDate} />
               <View style={{ marginTop: 10 }}>
-                <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                <Button title="إلغاء" onPress={() => setModalVisible(false)} />
               </View>
             </View>
           </View>
@@ -1145,12 +1249,13 @@ export default Home;
 const Container = styled.SafeAreaView`
   flex: 1;
   background-color: #fdf8f2;
+  direction: rtl;
 `;
 
 const Content = styled.ScrollView.attrs(() => ({}))``;
 
 const TopRow = styled.View`
-  flex-direction: row;
+  flex-direction: row-reverse;
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
@@ -1296,11 +1401,26 @@ const BudgetTitle = styled.Text`
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 3px;
+  text-align: left;
 `;
 
 const BudgetSubtitle = styled.Text`
   font-size: 14px;
   color: #333;
+  text-align: left;
+`;
+
+const SeeText = styled.Text`
+  font-size: 18px;
+  color: #000;
+  text-align: left;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+`;
+const SeeSubText = styled.Text`
+  font-size: 16px;
+  color: #333;
+  text-align: left;
 `;
 
 const BudgetChartImg = styled.Image`
@@ -1336,11 +1456,13 @@ const VenuesTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const VenuesDesc = styled.Text`
   font-size: 14px;
   color: #333;
+  text-align: left;
 `;
 
 const VenuesImg = styled.Image`
@@ -1355,6 +1477,7 @@ const VenuesHeader = styled.Text`
   font-weight: 700;
   color: #000;
   margin: 0 20px 5px;
+  text-align: left;
 `;
 
 const VenuesWrapper = styled.View`
@@ -1365,7 +1488,7 @@ const VenuesRow = styled.ScrollView.attrs(() => ({
   horizontal: true,
   showsHorizontalScrollIndicator: false,
 }))`
-  padding-left: 20px;
+  padding-right: 20px;
 `;
 
 const CardScroll = styled.ScrollView``;
@@ -1390,7 +1513,7 @@ const TouchableVenueCard = styled.TouchableOpacity`
   width: 220px;
   background-color: #fff;
   border-radius: 8px;
-  margin-right: 16px;
+  margin-left: 16px;
   shadow-color: #000;
   shadow-opacity: 0.03;
   shadow-radius: 3px;
@@ -1402,6 +1525,20 @@ const VenueImage = styled.Image`
   height: 120px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+`;
+const ExtraView = styled.View`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+`;
+
+const ArrowDown = styled.Image.attrs({
+  resizeMode: "contain",
+})`
+  width: 17.5px; /* or whatever fixed size you need */
+  height: 17.5px;
+  /* tint-color is how styled-components passes tintColor under the hood */
+  tint-color: #000;
 `;
 
 const VenueCardContent = styled.View`
@@ -1476,12 +1613,14 @@ const HelpSectionTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin: 0 20px 10px;
+  text-align: left;
 `;
 
 const LinkText = styled.Text`
   color: #0066cc;
   font-size: 14px;
   margin: 0 20px 20px;
+  text-align: left;
 `;
 
 /* Vendors (Collapsed) */
@@ -1508,11 +1647,13 @@ const VendorsTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const VendorsDesc = styled.Text`
   font-size: 14px;
   color: #333;
+  text-align: left;
 `;
 
 const VendorsImg = styled.Image`
@@ -1559,9 +1700,10 @@ const VenuesSubHeader = styled.Text`
   font-weight: 500;
   color: #000;
   margin: 20px 0px 0px 20px;
+  text-align: left;
 `;
 
-const BudgetEstimatesCard = styled.View`
+const BudgetEstimatesCard = styled.TouchableOpacity`
   margin: 20px;
   padding: 20px;
   background-color: #fff;
@@ -1591,7 +1733,7 @@ const VendorCategoryWrapper = styled.View`
   align-items: center;
 `;
 
-const CategoryCircle = styled.TouchableOpacity`
+const CategoryCircle = styled.View`
   width: 100px;
   height: 100px;
   border-radius: 50px;
@@ -1646,17 +1788,20 @@ const CollapsedTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const CollapsedDesc = styled.Text`
   font-size: 14px;
   color: #333;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const CollapsedImage = styled.Image`
   width: 80px;
   height: 80px;
+  border-radius: 8px;
 `;
 
 const ExpandedAnnouncementsContainer = styled.View`
@@ -1675,12 +1820,14 @@ const AnnouncementHeading = styled.Text`
   font-weight: 700;
   margin-bottom: 8px;
   color: #000;
+  text-align: left;
 `;
 
 const AnnouncementSubtitle = styled.Text`
   font-size: 14px;
   color: #333;
   margin-bottom: 16px;
+  text-align: left;
 `;
 
 const MatchingDesignsTitle = styled.Text`
@@ -1688,6 +1835,7 @@ const MatchingDesignsTitle = styled.Text`
   font-weight: 700;
   margin-bottom: 10px;
   color: #000;
+  text-align: left;
 `;
 
 const TwoItemRow = styled.View`
@@ -1696,7 +1844,7 @@ const TwoItemRow = styled.View`
   margin-bottom: 16px;
 `;
 
-const DesignCard = styled.View`
+const DesignCard = styled.TouchableOpacity`
   width: 48%;
   border-radius: 8px;
   background-color: #fff;
@@ -1710,6 +1858,7 @@ const DesignCard = styled.View`
 const DesignImage = styled.Image`
   width: 100%;
   height: 100px;
+  border-radius: 8px;
 `;
 
 const DesignLabel = styled.Text`
@@ -1717,6 +1866,7 @@ const DesignLabel = styled.Text`
   font-weight: 600;
   margin: 8px;
   color: #000;
+  text-align: left;
 `;
 
 const PinkButton = styled.TouchableOpacity`
@@ -1739,6 +1889,7 @@ const BeforeTitle = styled.Text`
   font-weight: 700;
   margin-bottom: 10px;
   color: #000;
+  text-align: left;
 `;
 
 const BulletIcon = styled.View`
@@ -1757,12 +1908,14 @@ const BulletText = styled.View`
 const BulletTitle = styled.Text`
   font-weight: bold;
   font-size: 14px;
+  text-align: left;
 `;
 
 const BulletDescription = styled.Text`
   font-size: 14px;
   color: #333;
   margin-top: 4px;
+  text-align: left;
 `;
 
 const BulletItemContainer = styled.TouchableOpacity`
@@ -1812,6 +1965,7 @@ const YourWeddingTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin: 20px;
+  text-align: left;
 `;
 
 const ChecklistCard = styled.View`
@@ -1849,25 +2003,28 @@ const ChecklistTitle = styled.Text`
   color: #000;
 `;
 
-const TaskItem = styled.View`
+const TaskItem = styled.TouchableOpacity`
   flex-direction: row;
   align-items: flex-start;
   margin-bottom: 10px;
 `;
 
 const TaskBullet = styled.View`
-  width: 20px;
-  height: 20px;
-  border-radius: 10px;
-  border-width: 1px;
-  border-color: #333;
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
   margin-right: 8px;
+  border: 2px solid #c9c9c9;
+  background-color: ${({ completed }) =>
+    completed ? "#c9c9c9" : "transparent"};
 `;
 
 const TaskLabel = styled.Text`
   flex: 1;
-  font-size: 14px;
-  color: #333;
+  color: ${({ completed }) => (completed ? "#999" : "#000")};
+  text-decoration-line: ${({ completed }) =>
+    completed ? "line-through" : "none"};
+  text-align: left;
 `;
 
 const GuestsCard = styled.View`
@@ -1915,6 +2072,18 @@ const GuestsCountRow = styled.View`
   align-items: baseline;
   margin-bottom: 4px;
 `;
+const AcceptCountRow = styled.View`
+  flex-direction: row;
+  align-items: baseline;
+  margin-bottom: 4px;
+  gap: 12px;
+`;
+const DetailCountRow = styled.View`
+  flex-direction: row;
+  align-items: baseline;
+  margin-bottom: 4px;
+  gap: 4px;
+`;
 
 const GuestsCountNumber = styled.Text`
   font-size: 32px;
@@ -1931,4 +2100,5 @@ const GuestsCountLabel = styled.Text`
 const GuestsDesc = styled.Text`
   font-size: 14px;
   color: #333;
+  text-align: left;
 `;

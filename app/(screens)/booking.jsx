@@ -17,14 +17,17 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import styled from "styled-components/native";
 import { publicRequest, createUserRequest } from "../../requestMethods";
 import { useSelector } from "react-redux"; // Import Redux selector
+import axios from "axios";
 
 const { width } = Dimensions.get("window");
 const STATUSBAR_HEIGHT = Platform.OS === "ios" ? 44 : StatusBar.currentHeight;
+const BASE_URL = "https://theknot-30278e2ff419.herokuapp.com/api";
 
 // ---------- STYLED COMPONENTS ----------
 const Container = styled.View`
   flex: 1;
   background-color: #ffffff;
+  direction: rtl;
 `;
 
 const BackButton = styled.TouchableOpacity`
@@ -147,6 +150,7 @@ const PageIndicatorText = styled.Text`
   color: white;
   font-size: 14px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const ContentContainer = styled.View`
@@ -163,12 +167,14 @@ const VenueTitle = styled.Text`
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 8px;
+  text-align: left;
 `;
 
 const VenueSubtitle = styled.Text`
   font-size: 18px;
   color: #666;
   margin-bottom: 20px;
+  text-align: left;
 `;
 
 const LocationRow = styled.TouchableOpacity`
@@ -184,6 +190,7 @@ const LocationText = styled.Text`
   font-size: 16px;
   margin-left: 10px;
   color: #333;
+  text-align: left;
 `;
 
 const InfoCard = styled.View`
@@ -209,6 +216,7 @@ const RatingText = styled.Text`
   font-size: 22px;
   font-weight: bold;
   margin-left: 8px;
+  text-align: left;
 `;
 
 const ReviewLink = styled.TouchableOpacity`
@@ -221,6 +229,7 @@ const ReviewLinkText = styled.Text`
   font-size: 14px;
   color: #555;
   font-weight: 500;
+  text-align: left;
 `;
 
 const VenueRow = styled.View`
@@ -242,6 +251,7 @@ const VenueTypeText = styled.Text`
   letter-spacing: 1px;
   color: white;
   font-weight: bold;
+  text-align: left;
 `;
 
 const Divider = styled.View`
@@ -254,6 +264,7 @@ const SectionTitle = styled.Text`
   font-size: 20px;
   font-weight: bold;
   margin-bottom: 16px;
+  text-align: left;
 `;
 
 const PriceRow = styled.TouchableOpacity`
@@ -273,12 +284,14 @@ const PriceText = styled.Text`
   font-size: 20px;
   font-weight: bold;
   color: #333;
+  text-align: left;
 `;
 
 const PriceDetails = styled.Text`
   font-size: 14px;
   color: #666;
   margin-top: 4px;
+  text-align: left;
 `;
 
 const FeatureRow = styled.View`
@@ -302,6 +315,7 @@ const FeatureText = styled.Text`
   font-size: 14px;
   margin-left: 8px;
   color: #555;
+  text-align: left;
 `;
 
 const ResponseTime = styled.View`
@@ -319,6 +333,7 @@ const ResponseTimeText = styled.Text`
   font-size: 14px;
   margin-left: 8px;
   color: #666;
+  text-align: left;
 `;
 
 const ButtonsRowWrapper = styled.View`
@@ -363,6 +378,7 @@ const CallButtonText = styled.Text`
   color: #ff69b4;
   font-size: 18px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const QuoteButton = styled.TouchableOpacity`
@@ -383,6 +399,7 @@ const QuoteButtonText = styled.Text`
   color: white;
   font-size: 18px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const LoadingContainer = styled.View`
@@ -411,6 +428,7 @@ const ModalTitle = styled.Text`
   font-weight: bold;
   margin-bottom: 12px;
   text-align: center;
+  text-align: left;
 `;
 
 const StepIndicator = styled.Text`
@@ -418,6 +436,7 @@ const StepIndicator = styled.Text`
   color: #888;
   margin-bottom: 16px;
   text-align: center;
+  text-align: left;
 `;
 
 const FormField = styled.TextInput`
@@ -426,6 +445,7 @@ const FormField = styled.TextInput`
   padding-horizontal: 12px;
   padding-vertical: 10px;
   margin-bottom: 12px;
+  text-align: left;
 `;
 
 const ModalButtonRow = styled.View`
@@ -446,6 +466,7 @@ const ModalButton = styled.TouchableOpacity`
 const ModalButtonText = styled.Text`
   color: ${(props) => (props.primary ? "#fff" : "#333")};
   font-weight: bold;
+  text-align: left;
 `;
 
 const CallModalContainer = styled.View`
@@ -469,6 +490,11 @@ const CallModalTitle = styled.Text`
   margin-bottom: 16px;
   text-align: center;
 `;
+const ErrorText = styled.Text`
+  font-size: 14px;
+  text-align: left;
+  color: #ff1e1e;
+`;
 
 const CallOption = styled.TouchableOpacity`
   flex-direction: row;
@@ -481,6 +507,7 @@ const CallOption = styled.TouchableOpacity`
 const CallOptionText = styled.Text`
   font-size: 18px;
   margin-left: 16px;
+  text-align: left;
 `;
 
 const CancelButton = styled.TouchableOpacity`
@@ -495,32 +522,86 @@ const CancelButtonText = styled.Text`
   font-size: 18px;
   font-weight: 500;
   color: #333;
+  text-align: left;
+`;
+
+const PriceCon = styled.View`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+`;
+
+const SuccessContainer = styled.View`
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: #fff;
+`;
+
+const SuccessIcon = styled.View`
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const SuccessTitle = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff69b4;
+  text-align: center;
+  margin-bottom: 15px;
+  font-family: ${Platform.OS === "ios" ? "System" : "Roboto"};
+`;
+
+const SuccessMessage = styled.Text`
+  font-size: 16px;
+  color: #666;
+  text-align: center;
+  line-height: 24px;
+  margin-bottom: 30px;
+  padding: 0 10px;
+  font-family: ${Platform.OS === "ios" ? "System" : "Roboto"};
+`;
+
+const SuccessButton = styled.TouchableOpacity`
+  background-color: #ff69b4;
+  padding: 15px 30px;
+  border-radius: 8px;
+  min-width: 200px;
+  align-items: center;
+  justify-content: center;
+  elevation: 2;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.1;
+  shadow-radius: 4px;
+`;
+
+const SuccessButtonText = styled.Text`
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  font-family: ${Platform.OS === "ios" ? "System" : "Roboto"};
 `;
 
 const Booking = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-
-  // ---------- FAVORITES LOGIC START ----------
-  // Redux for user auth
   const currentUser = useSelector((state) => state.user.currentUser);
   const isAuthenticated = !!currentUser;
   const userId = currentUser?._id || null;
-
-  // States
+  const userTag = useSelector((state) => state.user?.currentUser?.userTag);
   const [userFavorites, setUserFavorites] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Modal states
   const [modalVisible, setModalVisible] = useState(false);
   const [callModalVisible, setCallModalVisible] = useState(false);
   const [formStep, setFormStep] = useState(1);
-
-  // Form data states
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -528,6 +609,104 @@ const Booking = () => {
   const [guestCount, setGuestCount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [weddingDetails, setWeddingDetails] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Validation state
+  const [emailError, setEmailError] = useState("");
+  const [dateError, setDateError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
+
+  const accessToken = useSelector(
+    (state) => state.user?.currentUser?.accessToken
+  );
+
+  // Email validation function
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateDate = (dateString) => {
+    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const match = dateString.match(dateRegex);
+
+    if (!match) return false;
+
+    const [, day, month, year] = match;
+    const date = new Date(year, month - 1, day);
+
+    // Check if the date is valid and not in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return (
+      date.getDate() == day &&
+      date.getMonth() == month - 1 &&
+      date.getFullYear() == year &&
+      date >= today
+    );
+  };
+
+  // Handle email input change
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    if (text && !validateEmail(text)) {
+      setEmailError("يرجى إدخال بريد إلكتروني صحيح");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  // Handle date input change
+  const handleDateChange = (text) => {
+    setWeddingDate(text);
+
+    if (text.length === 10) {
+      if (!validateDate(text)) {
+        setDateError("يرجى إدخال تاريخ صحيح (يوم/شهر/سنة) في المستقبل");
+      } else {
+        setDateError("");
+      }
+    } else if (text.length > 0) {
+      setDateError("يرجى إدخال التاريخ بصيغة يوم/شهر/سنة");
+    } else {
+      setDateError("");
+    }
+  };
+
+  // Validate form step 1
+  const validateStep1 = () => {
+    const errors = {};
+
+    if (!firstName.trim()) {
+      errors.firstName = "الاسم الأول مطلوب";
+    }
+
+    if (!lastName.trim()) {
+      errors.lastName = "اسم العائلة مطلوب";
+    }
+
+    if (!email.trim()) {
+      errors.email = "البريد الإلكتروني مطلوب";
+    } else if (!validateEmail(email)) {
+      errors.email = "يرجى إدخال بريد إلكتروني صحيح";
+    }
+
+    if (!weddingDate.trim()) {
+      errors.weddingDate = "تاريخ الزفاف مطلوب";
+    } else if (!validateDate(weddingDate)) {
+      errors.weddingDate = "يرجى إدخال تاريخ صحيح في المستقبل";
+    }
+
+    if (!guestCount.trim()) {
+      errors.guestCount = "عدد الضيوف مطلوب";
+    } else if (isNaN(guestCount) || parseInt(guestCount) <= 0) {
+      errors.guestCount = "يرجى إدخال رقم صحيح لعدد الضيوف";
+    }
+
+    return errors;
+  };
 
   // Fetch venue details
   useEffect(() => {
@@ -537,7 +716,7 @@ const Booking = () => {
         const res = await publicRequest.get(`/vendors/${id}`);
         setVenue(res.data);
       } catch (err) {
-        setError("Failed to fetch venue details.");
+        setError("فشل في جلب تفاصيل القاعة.");
         console.log(err);
       } finally {
         setLoading(false);
@@ -555,22 +734,20 @@ const Booking = () => {
       if (!isAuthenticated || !userId) return;
 
       try {
-        const userReq = createUserRequest(); // properly handles token
+        const userReq = createUserRequest();
         const response = await userReq.get(`/users/${userId}/favorites`);
         if (Array.isArray(response.data)) {
-          // If the API returns an array of vendor docs, we can map them to IDs
           const favoriteIds = response.data.map((fav) =>
             fav._id ? fav._id : fav
           );
           setUserFavorites(favoriteIds);
 
-          // Check if current venue is in favorites
           if (id && favoriteIds.includes(id)) {
             setIsFavorite(true);
           }
         }
       } catch (err) {
-        console.log("Error fetching user favorites:", err);
+        console.log("خطأ في جلب المفضلات:", err);
       }
     };
 
@@ -580,7 +757,6 @@ const Booking = () => {
   // Toggle favorite functionality
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
-      // If user not logged in, prompt to sign-in
       router.push("/sign-in");
       return;
     }
@@ -589,26 +765,20 @@ const Booking = () => {
 
     try {
       const userReq = createUserRequest();
-
-      // Optimistic UI update
       setIsFavorite(!isFavorite);
 
       if (isFavorite) {
-        // Remove from favorites
         setUserFavorites((prev) => prev.filter((item) => item !== id));
         await userReq.delete(`/users/${userId}/favorites/${id}`);
       } else {
-        // Add to favorites
         setUserFavorites((prev) => [...prev, id]);
         await userReq.post(`/users/${userId}/favorites`, { vendorId: id });
       }
     } catch (err) {
-      console.log("Error toggling favorite:", err);
-      // Revert UI if error
+      console.log("خطأ في تبديل المفضلة:", err);
       setIsFavorite(!isFavorite);
     }
   };
-  // ---------- FAVORITES LOGIC END ----------
 
   const onScrollEnd = (e) => {
     let contentOffset = e.nativeEvent.contentOffset.x;
@@ -617,7 +787,6 @@ const Booking = () => {
   };
 
   const handleOpenQuoteModal = () => {
-    // Reset form if needed:
     setFirstName("");
     setLastName("");
     setEmail("");
@@ -626,16 +795,32 @@ const Booking = () => {
     setPhoneNumber("");
     setWeddingDetails("");
     setFormStep(1);
+    setEmailError("");
+    setDateError("");
+    setFormErrors({});
+    setSuccess(false);
+    setSubmitting(false);
     setModalVisible(true);
   };
 
   const handleCloseModal = () => {
     setModalVisible(false);
+    setFormErrors({});
+    setEmailError("");
+    setDateError("");
+    setSuccess(false);
+    setSubmitting(false);
+    setFormStep(1);
   };
 
   const handleNextStep = () => {
     if (formStep === 1) {
-      // Validate step-1 fields if needed
+      const errors = validateStep1();
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        return;
+      }
+      setFormErrors({});
       setFormStep(2);
     }
   };
@@ -646,23 +831,59 @@ const Booking = () => {
     }
   };
 
-  const handleSubmitForm = () => {
-    // Do final submission or call an API
-    console.log("Form data:", {
-      firstName,
-      lastName,
-      email,
-      weddingDate,
-      guestCount,
-      phoneNumber,
-      weddingDetails,
-    });
-    // Then close modal
-    setModalVisible(false);
-    // Possibly show a success message or navigate
+  const handleSubmitForm = async (e) => {
+    e.preventDefault();
+
+    const step1Errors = validateStep1();
+    if (Object.keys(step1Errors).length > 0) {
+      setFormErrors(step1Errors);
+      setFormStep(1);
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/quota`,
+        {
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNumber: phoneNumber,
+          weddingDate: weddingDate,
+          weddingDetails: weddingDetails,
+          userTag,
+          guestCount: parseInt(guestCount),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setSuccess(true);
+      setFormStep(3); // Move to success step
+    } catch (err) {
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          "An error occurred"
+      );
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // ---------- CALL LOGIC START ----------
+  const handleCloseSuccessModal = () => {
+    setModalVisible(false);
+    setSuccess(false);
+    setFormStep(1);
+    // Navigate to home
+    router.push("/");
+  };
+
+  // Call logic functions
   const handleOpenCallModal = () => {
     setCallModalVisible(true);
   };
@@ -672,9 +893,7 @@ const Booking = () => {
   };
 
   const handleMakeCall = async (phoneNum) => {
-    // Default to venue phone number if provided, otherwise use a fallback
     const numberToCall = phoneNum || venue?.phone || "1234567890";
-
     const phoneUrl = `tel:${numberToCall}`;
 
     try {
@@ -684,23 +903,22 @@ const Booking = () => {
         await Linking.openURL(phoneUrl);
       } else {
         Alert.alert(
-          "Cannot Make Call",
-          "Your device doesn't support making phone calls or no phone app is available.",
-          [{ text: "OK" }]
+          "لا يمكن إجراء المكالمة",
+          "جهازك لا يدعم إجراء المكالمات الهاتفية أو لا يوجد تطبيق هاتف متاح.",
+          [{ text: "موافق" }]
         );
       }
     } catch (error) {
       Alert.alert(
-        "Error",
-        "An error occurred while trying to make the call. Please try again.",
-        [{ text: "OK" }]
+        "خطأ",
+        "حدث خطأ أثناء محاولة إجراء المكالمة. يرجى المحاولة مرة أخرى.",
+        [{ text: "موافق" }]
       );
-      console.error("Error making call:", error);
+      console.error("خطأ في إجراء المكالمة:", error);
     } finally {
       handleCloseCallModal();
     }
   };
-  // ---------- CALL LOGIC END ----------
 
   if (loading) {
     return (
@@ -713,7 +931,7 @@ const Booking = () => {
   if (error || !venue) {
     return (
       <LoadingContainer>
-        <Text>{error || "Something went wrong."}</Text>
+        <Text>{error || "حدث خطأ ما."}</Text>
         <TouchableOpacity
           style={{
             marginTop: 20,
@@ -723,7 +941,7 @@ const Booking = () => {
           }}
           onPress={() => router.back()}
         >
-          <Text style={{ color: "white" }}>Go Back</Text>
+          <Text style={{ color: "white" }}>العودة</Text>
         </TouchableOpacity>
       </LoadingContainer>
     );
@@ -738,18 +956,16 @@ const Booking = () => {
           { uri: "https://via.placeholder.com/400x600/eeeeee" },
         ];
 
-  // Sample features for demonstration
   const features = [
-    { icon: "users", text: "Up to 300 guests" },
-    { icon: "calendar", text: "Available weekends" },
-    { icon: "coffee", text: "Catering included" },
-    { icon: "music", text: "Live music allowed" },
+    { icon: "users", text: "حتى 300 ضيف" },
+    { icon: "calendar", text: "متاح في نهاية الأسبوع" },
+    { icon: "coffee", text: "يشمل الطعام" },
+    { icon: "music", text: "الموسيقى الحية مسموحة" },
   ];
 
-  // Phone numbers for the venue
   const venuePhoneNumbers = [
-    { type: "Main Office", number: venue.phone || "555-123-4567" },
-    { type: "Sales Team", number: venue.salesPhone || "555-987-6543" },
+    { type: "المكتب الرئيسي", number: venue.phone || "555-123-4567" },
+    { type: "فريق المبيعات", number: venue.salesPhone || "555-987-6543" },
   ];
 
   return (
@@ -760,9 +976,8 @@ const Booking = () => {
         barStyle="light-content"
       />
 
-      {/* Header Buttons */}
       <BackButton onPress={() => router.back()}>
-        <Feather name="arrow-left" size={22} color="#000" />
+        <Feather name="arrow-right" size={22} color="#000" />
       </BackButton>
 
       <HeaderButtonsContainer>
@@ -778,9 +993,7 @@ const Booking = () => {
         </FavoriteButton>
       </HeaderButtonsContainer>
 
-      {/* Main Scrollable Content */}
       <ScrollView>
-        {/* Carousel Section */}
         <CarouselContainer>
           <ScrollView
             horizontal
@@ -795,7 +1008,7 @@ const Booking = () => {
 
           {venue.hasOffers && (
             <OfferBadge>
-              <OfferText>2026 Wedding Offers</OfferText>
+              <OfferText>عروض زفاف 2026</OfferText>
             </OfferBadge>
           )}
 
@@ -814,18 +1027,15 @@ const Booking = () => {
           </PageDotsContainer>
         </CarouselContainer>
 
-        {/* Venue Details */}
         <ContentContainer>
           <VenueTitle>{venue.name}</VenueTitle>
           <VenueSubtitle>
-            {venue.tagline || "Your Dream Wedding Venue"}
+            {venue.tagline || "قاعة زفافك المثالية"}
           </VenueSubtitle>
 
           <LocationRow>
             <Feather name="map-pin" size={20} color="#ff69b4" />
-            <LocationText>
-              {venue.location || "Location unavailable"}
-            </LocationText>
+            <LocationText>{venue.location || "الموقع غير متاح"}</LocationText>
           </LocationRow>
 
           <InfoCard>
@@ -835,15 +1045,13 @@ const Booking = () => {
                 <RatingText>{venue.rating}</RatingText>
               </RatingLeft>
               <ReviewLink>
-                <ReviewLinkText>{venue.numReviews || 0} reviews</ReviewLinkText>
+                <ReviewLinkText>{venue.numReviews || 0} تقييم</ReviewLinkText>
               </ReviewLink>
             </RatingRow>
 
             <VenueRow>
               <VenueType>
-                <VenueTypeText>
-                  {venue.category || "WEDDING VENUE"}
-                </VenueTypeText>
+                <VenueTypeText>{venue.category || "قاعة أفراح"}</VenueTypeText>
               </VenueType>
               {venue.logoUrl && (
                 <Image
@@ -854,20 +1062,22 @@ const Booking = () => {
             </VenueRow>
           </InfoCard>
 
-          <SectionTitle>Pricing</SectionTitle>
+          <SectionTitle>الأسعار</SectionTitle>
           <PriceRow>
             <Feather name="dollar-sign" size={24} color="#ff69b4" />
             <PriceInfo>
-              <PriceText>
-                {venue.priceRange || "$9,000 starting price"}
-              </PriceText>
-              <PriceDetails>Tap for full pricing details</PriceDetails>
+              <PriceCon>
+                <PriceText>{venue.prePrice} ريال</PriceText>
+                <Text>-</Text>
+                <PriceText>{venue.postPrice} ريال</PriceText>
+              </PriceCon>
+              <PriceDetails>اضغط لتفاصيل الأسعار كاملة</PriceDetails>
             </PriceInfo>
           </PriceRow>
 
           <Divider />
 
-          <SectionTitle>Venue Features</SectionTitle>
+          <SectionTitle>مميزات القاعة</SectionTitle>
           <FeatureRow>
             {features.map((feature, index) => (
               <FeatureItem key={index}>
@@ -880,25 +1090,24 @@ const Booking = () => {
           <ResponseTime>
             <Feather name="clock" size={16} color="#ff69b4" />
             <ResponseTimeText>
-              {venue.responseTime || "Typically responds within 24h"}
+              {venue.responseTime || "عادة ما يرد خلال 24 ساعة"}
             </ResponseTimeText>
           </ResponseTime>
         </ContentContainer>
       </ScrollView>
 
-      {/* Sticky Bottom Bar */}
       <ButtonsRowWrapper>
         <ButtonsRow>
           <CallButton onPress={handleOpenCallModal}>
-            <CallButtonText>Call</CallButtonText>
+            <CallButtonText>اتصال</CallButtonText>
           </CallButton>
           <QuoteButton onPress={handleOpenQuoteModal}>
-            <QuoteButtonText>Request Quote</QuoteButtonText>
+            <QuoteButtonText>طلب عرض سعر</QuoteButtonText>
           </QuoteButton>
         </ButtonsRow>
       </ButtonsRowWrapper>
 
-      {/* 2-STEP MODAL */}
+      {/* Enhanced 3-STEP MODAL with Validation and Success */}
       <Modal
         visible={modalVisible}
         transparent
@@ -909,56 +1118,99 @@ const Booking = () => {
           <ModalCard>
             {formStep === 1 ? (
               <>
-                <ModalTitle>Contact Info</ModalTitle>
-                <StepIndicator>Step 1 of 2</StepIndicator>
+                <ModalTitle>معلومات التواصل</ModalTitle>
+                <StepIndicator>الخطوة 1 من 2</StepIndicator>
+                {formErrors.firstName && (
+                  <ErrorText>{formErrors.firstName}</ErrorText>
+                )}
+                {formErrors.lastName && (
+                  <ErrorText>{formErrors.lastName}</ErrorText>
+                )}
 
+                {(formErrors.email || emailError) && (
+                  <ErrorText>{formErrors.email || emailError}</ErrorText>
+                )}
+                {(formErrors.weddingDate || dateError) && (
+                  <ErrorText>{formErrors.weddingDate || dateError}</ErrorText>
+                )}
+                {formErrors.guestCount && (
+                  <ErrorText>{formErrors.guestCount}</ErrorText>
+                )}
                 <FormField
-                  placeholder="First Name"
+                  placeholder="الاسم الأول"
                   value={firstName}
                   onChangeText={setFirstName}
+                  style={{
+                    borderColor: formErrors.firstName ? "#ff6b6b" : "#ddd",
+                  }}
                 />
+
                 <FormField
-                  placeholder="Last Name"
+                  placeholder="اسم العائلة"
                   value={lastName}
                   onChangeText={setLastName}
+                  style={{
+                    borderColor: formErrors.lastName ? "#ff6b6b" : "#ddd",
+                  }}
                 />
+
                 <FormField
-                  placeholder="Email"
+                  placeholder="البريد الإلكتروني"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={handleEmailChange}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={{
+                    borderColor:
+                      formErrors.email || emailError ? "#ff6b6b" : "#ddd",
+                  }}
                 />
+
                 <FormField
-                  placeholder="Estimated Wedding Date (MM/DD/YYYY)"
+                  placeholder="تاريخ الزفاف المتوقع (17/02/2027)"
                   value={weddingDate}
-                  onChangeText={setWeddingDate}
+                  onChangeText={handleDateChange}
+                  keyboardType="numeric"
+                  maxLength={10}
+                  style={{
+                    borderColor:
+                      formErrors.weddingDate || dateError ? "#ff6b6b" : "#ddd",
+                  }}
                 />
+
                 <FormField
-                  placeholder="Estimated Guest Count"
+                  placeholder="عدد الضيوف المتوقع"
                   value={guestCount}
                   onChangeText={setGuestCount}
+                  keyboardType="numeric"
+                  style={{
+                    borderColor: formErrors.guestCount ? "#ff6b6b" : "#ddd",
+                  }}
                 />
+
                 <FormField
-                  placeholder="Phone Number (optional)"
+                  placeholder="رقم الهاتف (اختياري)"
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}
+                  keyboardType="phone-pad"
                 />
 
                 <ModalButtonRow>
                   <ModalButton onPress={handleCloseModal}>
-                    <ModalButtonText>Cancel</ModalButtonText>
+                    <ModalButtonText>إلغاء</ModalButtonText>
                   </ModalButton>
                   <ModalButton onPress={handleNextStep} primary>
-                    <ModalButtonText primary>Next</ModalButtonText>
+                    <ModalButtonText primary>التالي</ModalButtonText>
                   </ModalButton>
                 </ModalButtonRow>
               </>
-            ) : (
+            ) : formStep === 2 ? (
               <>
-                <ModalTitle>About Your Wedding</ModalTitle>
-                <StepIndicator>Step 2 of 2</StepIndicator>
+                <ModalTitle>حول زفافك</ModalTitle>
+                <StepIndicator>الخطوة 2 من 2</StepIndicator>
 
                 <FormField
-                  placeholder="Describe what's important for your wedding..."
+                  placeholder="صف ما هو مهم لزفافك..."
                   value={weddingDetails}
                   onChangeText={setWeddingDetails}
                   multiline
@@ -967,12 +1219,34 @@ const Booking = () => {
 
                 <ModalButtonRow>
                   <ModalButton onPress={handlePreviousStep}>
-                    <ModalButtonText>Back</ModalButtonText>
+                    <ModalButtonText>السابق</ModalButtonText>
                   </ModalButton>
-                  <ModalButton onPress={handleSubmitForm} primary>
-                    <ModalButtonText primary>Submit</ModalButtonText>
+                  <ModalButton
+                    onPress={handleSubmitForm}
+                    primary
+                    disabled={submitting}
+                  >
+                    <ModalButtonText primary>
+                      {submitting ? "جاري الإرسال..." : "إرسال"}
+                    </ModalButtonText>
                   </ModalButton>
                 </ModalButtonRow>
+              </>
+            ) : (
+              <>
+                <SuccessContainer>
+                  <SuccessIcon>
+                    <Feather name="check-circle" size={60} color="#ff69b4" />
+                  </SuccessIcon>
+                  <SuccessTitle>تم إرسال طلبك بنجاح!</SuccessTitle>
+                  <SuccessMessage>
+                    شكراً لك! تم إرسال طلب عرض السعر بنجاح. سيتم التواصل معك
+                    قريباً من قبل فريق {venue.name}.
+                  </SuccessMessage>
+                  <SuccessButton onPress={handleCloseSuccessModal}>
+                    <SuccessButtonText>العودة للرئيسية</SuccessButtonText>
+                  </SuccessButton>
+                </SuccessContainer>
               </>
             )}
           </ModalCard>
@@ -988,7 +1262,7 @@ const Booking = () => {
       >
         <CallModalContainer>
           <CallModalCard>
-            <CallModalTitle>Call {venue.name}</CallModalTitle>
+            <CallModalTitle>الاتصال بـ {venue.name}</CallModalTitle>
 
             {venuePhoneNumbers.map((phoneInfo, index) => (
               <CallOption
@@ -1003,7 +1277,7 @@ const Booking = () => {
             ))}
 
             <CancelButton onPress={handleCloseCallModal}>
-              <CancelButtonText>Cancel</CancelButtonText>
+              <CancelButtonText>إلغاء</CancelButtonText>
             </CancelButton>
           </CallModalCard>
         </CallModalContainer>

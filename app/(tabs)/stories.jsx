@@ -10,13 +10,22 @@ import {
 import styled from "styled-components/native";
 import { Feather } from "@expo/vector-icons";
 import { publicRequest } from "../../requestMethods";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector, useDispatch } from "react-redux";
 import {
   addProduct,
   removeProduct,
   clearFeedbackIcon,
 } from "../redux/registrySlice";
+const Cart = require("../../assets/icons/cart.png");
+const House = require("../../assets/images/house.png");
+const Lifestyle = require("../../assets/images/lifestyle.jpeg");
+const Bathroom = require("../../assets/images/bathroomRoom.png");
+const Bedroom = require("../../assets/images/bedRoom.jpeg");
+const FoodTable = require("../../assets/images/foodTable.png");
+const kitchen = require("../../assets/images/kitchenMain.jpeg"); // keep lowercase if you need it that way
+const Popular = require("../../assets/images/popularGift.png");
+const Essential = require("../../assets/images/essential.png");
 
 /* --------------------------------------------------------------------------------
    GLOBAL CONSTANTS
@@ -32,14 +41,20 @@ const placeholder = "https://via.placeholder.com/400x350/f5f5f5/000000";
 const Container = styled.SafeAreaView`
   flex: 1;
   background-color: #fff;
+  direction: rtl;
 `;
 
 // Search icon at top-right
-const SearchIcon = styled.View`
+const CartIcon = styled.TouchableOpacity`
   position: absolute;
   right: 20px;
   top: 20px;
   z-index: 10;
+`;
+
+const ImagePro = styled.Image`
+  width: 40px;
+  height: 40px;
 `;
 
 // Registry Title
@@ -49,6 +64,7 @@ const RegistryTitle = styled.Text`
   margin-top: 20px;
   margin-left: 20px;
   margin-bottom: 20px;
+  text-align: left;
 `;
 
 /* Tabs */
@@ -96,8 +112,9 @@ const SectionTitle = styled.Text`
   font-size: 24px;
   font-weight: bold;
   margin-left: 20px;
-  margin-top: 10px;
+  margin-top: 15px;
   margin-bottom: 20px;
+  text-align: left;
 `;
 
 /* Category Layout */
@@ -136,6 +153,7 @@ const EssentialsTitle = styled.Text`
   font-weight: bold;
   margin-horizontal: 20px;
   margin-top: 15px;
+  text-align: left;
 `;
 const EssentialsSubtitle = styled.Text`
   font-size: 18px;
@@ -143,6 +161,7 @@ const EssentialsSubtitle = styled.Text`
   margin-top: 10px;
   margin-bottom: 20px;
   line-height: 24px;
+  text-align: left;
 `;
 
 /* Cards (two side-by-side) */
@@ -167,6 +186,7 @@ const CardTitle = styled.Text`
   font-size: 18px;
   font-weight: bold;
   margin: 10px;
+  text-align: left;
 `;
 
 /* Horizontal Scroll containers */
@@ -187,10 +207,12 @@ const PriceSectionTitle = styled.Text`
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 15px;
+  text-align: left;
 `;
 const PriceText = styled.Text`
   font-size: 18px;
   line-height: 28px;
+  text-align: left;
 `;
 const PriceHighlight = styled.Text`
   font-weight: bold;
@@ -224,6 +246,7 @@ const PriceRangeButton = styled.TouchableOpacity`
 const PriceRangeText = styled.Text`
   font-size: 14px;
   font-weight: ${(props) => (props.active ? "bold" : "normal")};
+  text-align: left;
 `;
 
 /* Product Card for horizontal lists (Overview, Category view) */
@@ -263,16 +286,19 @@ const BrandText = styled.Text`
   font-size: 16px;
   color: #666;
   margin-bottom: 4px;
+  text-align: left;
 `;
 const ProductTitle = styled.Text`
   font-size: 17px;
   font-weight: bold;
   line-height: 22px;
   margin-bottom: 6px;
+  text-align: left;
 `;
 const ProductPrice = styled.Text`
   font-size: 20px;
   font-weight: bold;
+  text-align: left;
 `;
 
 /* "See more" button */
@@ -290,6 +316,7 @@ const SeeMoreText = styled.Text`
   color: #ec4899;
   font-size: 22px;
   font-weight: bold;
+  text-align: left;
 `;
 
 /* Section Divider (thicker) */
@@ -406,6 +433,7 @@ const CreateButtonText = styled.Text`
   font-size: 18px;
   font-weight: bold;
   margin-left: 8px;
+  text-align: left;
 `;
 
 /* Cash Fund Modal */
@@ -432,6 +460,7 @@ const ModalTitle = styled.Text`
   font-weight: bold;
   margin-bottom: 20px;
   color: #ec4899;
+  text-align: left;
 `;
 const InputLabel = styled.Text`
   font-size: 16px;
@@ -439,6 +468,7 @@ const InputLabel = styled.Text`
   align-self: flex-start;
   margin-bottom: 5px;
   color: #333;
+  text-align: left;
 `;
 const StyledInput = styled.TextInput`
   width: 100%;
@@ -475,6 +505,7 @@ const ButtonText = styled.Text`
   font-size: 16px;
   font-weight: bold;
   color: ${(props) => (props.light ? "white" : "#333")};
+  text-align: left;
 `;
 
 /* Created Cash Funds */
@@ -507,17 +538,20 @@ const FundTitle = styled.Text`
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 4px;
+  text-align: left;
 `;
 const FundGoal = styled.Text`
   font-size: 16px;
   color: #ec4899;
   font-weight: bold;
   margin-bottom: 6px;
+  text-align: left;
 `;
 const FundDescription = styled.Text`
   font-size: 14px;
   color: #666;
   margin-bottom: 6px;
+  text-align: left;
 `;
 const ProgressContainer = styled.View`
   height: 6px;
@@ -564,16 +598,19 @@ const GiftAdvisorTitle = styled.Text`
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 10px;
+  text-align: left;
 `;
 const GiftAdvisorText = styled.Text`
   font-size: 18px;
   line-height: 26px;
   margin-bottom: 15px;
+  text-align: left;
 `;
 const GuestCount = styled.Text`
   font-size: 18px;
   font-weight: bold;
   text-decoration: underline;
+  text-align: left;
 `;
 const PriceRangeHeader = styled.View`
   flex-direction: row;
@@ -584,6 +621,7 @@ const PriceRangeHeader = styled.View`
 const PriceRangeTitle = styled.Text`
   font-size: 18px;
   font-weight: bold;
+  text-align: left;
 `;
 const ShopButton = styled.TouchableOpacity`
   background-color: white;
@@ -596,10 +634,12 @@ const ShopButtonText = styled.Text`
   color: #0070f3;
   font-size: 16px;
   font-weight: bold;
+  text-align: left;
 `;
 const ProgressInfo = styled.Text`
   font-size: 16px;
   margin-vertical: 10px;
+  text-align: left;
 `;
 const ProgressBarContainer = styled.View`
   height: 10px;
@@ -626,14 +666,17 @@ const GiftListHeader = styled.View`
 const GiftListTitle = styled.Text`
   font-size: 32px;
   font-weight: bold;
+  text-align: left;
 `;
 const GiftItemCount = styled.Text`
   font-size: 18px;
   color: #666;
+  text-align: left;
 `;
 const GiftItemStatus = styled.Text`
   font-size: 16px;
   color: #666;
+  text-align: left;
 `;
 
 // Grid Wrapper for the added products in Manage Registry
@@ -691,11 +734,13 @@ const SettingsSectionTitle = styled.Text`
   font-weight: bold;
   margin-bottom: 6px;
   color: #000;
+  text-align: left;
 `;
 const SettingsSectionSubtitle = styled.Text`
   font-size: 16px;
   color: #666;
   margin-right: 50px;
+  text-align: left;
 `;
 const EditLink = styled.TouchableOpacity`
   position: absolute;
@@ -706,6 +751,7 @@ const EditLinkText = styled.Text`
   color: #007aff;
   font-weight: bold;
   font-size: 16px;
+  text-align: left;
 `;
 const LinkBox = styled.View`
   background-color: #f7f7f7;
@@ -716,6 +762,7 @@ const LinkBox = styled.View`
 const LinkText = styled.Text`
   font-size: 16px;
   color: #333;
+  text-align: left;
 `;
 const ShareLinkButton = styled.TouchableOpacity`
   background-color: transparent;
@@ -730,6 +777,7 @@ const ShareLinkText = styled.Text`
   color: #ec4899;
   font-size: 16px;
   font-weight: bold;
+  text-align: left;
 `;
 
 /* --------------------------------------------------------------------------------
@@ -747,7 +795,7 @@ const CategoryGrid = ({ categories, columnsPerRow, onCategoryPress }) => {
           {rowCategories.map((category, index) => (
             <CategoryItem key={`cat-${i + index}`}>
               <TouchableOpacity onPress={() => onCategoryPress(category.name)}>
-                <CategoryImage source={{ uri: category.image }} />
+                <CategoryImage source={category.image} />
                 <CategoryText>{category.name}</CategoryText>
               </TouchableOpacity>
             </CategoryItem>
@@ -779,21 +827,17 @@ const HorizontalItems = ({ items, renderItem }) => {
 -------------------------------------------------------------------------------- */
 const RegistryApp = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("Overview");
-  const tabs = ["Overview", "Manage Registry", "Track Gifts", "Settings"];
-
+  const { productId } = useLocalSearchParams();
+  const [activeTab, setActiveTab] = useState("نظرة عامة");
+  const tabs = ["نظرة عامة", "إدارة السجل", "تتبع الهدايا", "الإعدادات"];
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const dispatch = useDispatch();
   const { addedProducts, feedbackIcons } = useSelector(
     (state) => state.registry
   );
-
-  const [activeRange, setActiveRange] = useState("$0-$49");
-
-  // Cash Fund States
+  const [activeRange, setActiveRange] = useState("٠-٤٩ ريال");
   const [modalVisible, setModalVisible] = useState(false);
   const [cashFunds, setCashFunds] = useState([]);
   const [newFund, setNewFund] = useState({
@@ -802,76 +846,74 @@ const RegistryApp = () => {
     goal: "",
     type: "",
   });
-
-  // Category handling
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [catLoading, setCatLoading] = useState(false);
   const [catError, setCatError] = useState(null);
 
-  // Categories (sample data)
+  // Categories (sample data) - الفئات
   const categories = [
     {
-      name: "Home",
-      image:
-        "https://alsallum.s3.eu-north-1.amazonaws.com/B7EAF36E-CF69-4350-94BB-71A8EC7052AE.png",
+      name: "المنزل",
+      image: House,
     },
     {
-      name: "Lifestyle",
-      image:
-        "https://alsallum.s3.eu-north-1.amazonaws.com/2EFCC5A9-29E4-4D49-A384-EB631A6CC02C.jpeg",
+      name: "نمط الحياة",
+      image: Lifestyle,
     },
     {
-      name: "Bed & Rooms",
-      image:
-        "https://alsallum.s3.eu-north-1.amazonaws.com/99B3B494-731F-48CF-8482-3D175CF01846.jpeg",
+      name: "السرير والغرف",
+      image: Bedroom,
     },
     {
-      name: "Kitchen",
-      image:
-        "https://alsallum.s3.eu-north-1.amazonaws.com/AA3C0006-DA87-45C3-B15B-0AC943899150.jpeg",
+      name: "المطبخ",
+      image: kitchen,
     },
     {
-      name: "Tabletop",
-      image:
-        "https://alsallum.s3.eu-north-1.amazonaws.com/043EAB86-3D49-4F77-9A95-A54EA08AB2AC.png",
+      name: "أدوات المائدة",
+      image: FoodTable,
     },
     {
-      name: "Bathroom",
-      image:
-        "https://alsallum.s3.eu-north-1.amazonaws.com/71F63128-CBC7-4E3D-9C05-C97691F96B9F.png",
+      name: "الحمام",
+      image: Bathroom,
     },
   ];
+
   const slides = [
     {
-      name: "Serveware",
+      name: "أطباق التقديم",
       image:
         "https://alsallum.s3.eu-north-1.amazonaws.com/20FD9A0A-48E5-4668-AA76-51897022A4A8.png",
     },
     {
-      name: "Bakeware",
+      name: "أدوات الخبز",
       image:
         "https://alsallum.s3.eu-north-1.amazonaws.com/5052598F-9111-4AB1-80DC-67234A9E8861.png",
     },
     {
-      name: "Smart Home",
+      name: "المنزل الذكي",
       image:
         "https://alsallum.s3.eu-north-1.amazonaws.com/DF6991CE-4597-46DE-AC27-3480AE7A774F.png",
     },
     {
-      name: "Adventure Activities",
+      name: "أنشطة المغامرة",
       image:
         "https://alsallum.s3.eu-north-1.amazonaws.com/D5C98280-9E38-48BF-9C8D-58059C277B84.png",
     },
     {
-      name: "Decor",
+      name: "الديكور",
       image:
         "https://alsallum.s3.eu-north-1.amazonaws.com/90F0336F-E445-4944-B521-294AC3AD9A13.png",
     },
   ];
-  const priceRanges = ["$0-$49", "$50-$99", "$100-$149", "$150+"];
 
-  // Fetch random products for "Overview"
+  const priceRanges = ["٠-٤٩ ريال", "٥٠-٩٩ ريال", "١٠٠-١٤٩ ريال", "١٥٠+ ريال"];
+
+  const handleCart = () => {
+    router.push("pay");
+  };
+
+  // Fetch random products for "Overview" - جلب منتجات عشوائية للنظرة العامة
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
@@ -884,7 +926,7 @@ const RegistryApp = () => {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching products:", err);
-      setError("Failed to load products. Please try again later.");
+      setError("فشل في تحميل المنتجات. يرجى المحاولة مرة أخرى لاحقاً.");
       setLoading(false);
     }
   };
@@ -893,18 +935,18 @@ const RegistryApp = () => {
     fetchProducts();
   }, []);
 
-  // Tab switching
+  // Tab switching - تبديل التبويبات
   const handleTabPress = (tab) => {
     setSelectedCategory(null);
     setActiveTab(tab);
   };
 
-  // Price range
+  // Price range - نطاق الأسعار
   const handlePriceRangeClick = (range) => {
     setActiveRange(range);
   };
 
-  // Add product
+  // Add product - إضافة منتج
   const handleAddProduct = (product) => {
     dispatch(addProduct(product));
     // Remove feedback icon after 1 second
@@ -913,12 +955,12 @@ const RegistryApp = () => {
     }, 1000);
   };
 
-  // Remove product
+  // Remove product - إزالة منتج
   const handleRemoveProduct = (productId) => {
     dispatch(removeProduct(productId));
   };
 
-  // Category press
+  // Category press - الضغط على الفئة
   const handleCategoryPress = (catName) => {
     router.push({
       pathname: "/products",
@@ -926,21 +968,22 @@ const RegistryApp = () => {
     });
   };
 
-  // Category back
+  // Category back - العودة من الفئة
   const handleCategoryBack = () => {
-    setActiveTab("Overview");
+    setActiveTab("نظرة عامة");
     setSelectedCategory(null);
     setCategoryProducts([]);
   };
 
-  // Cash Fund
+  // Cash Fund - الصندوق النقدي
   const handleFundTypeSelect = (type) => {
     setNewFund({ ...newFund, type });
     setModalVisible(true);
   };
+
   const handleCreateFund = () => {
     if (!newFund.title || !newFund.goal) {
-      alert("Please enter a title and goal amount.");
+      alert("يرجى إدخال العنوان ومبلغ الهدف.");
       return;
     }
     const fund = {
@@ -959,22 +1002,22 @@ const RegistryApp = () => {
     setModalVisible(false);
   };
 
-  // Render user's existing cash funds
+  // Render user's existing cash funds - عرض الصناديق النقدية الموجودة للمستخدم
   const renderCashFunds = () => {
     if (cashFunds.length === 0) return null;
     return (
       <>
-        <SectionTitle>Your Cash Funds</SectionTitle>
+        <SectionTitle>صناديقك النقدية</SectionTitle>
         {cashFunds.map((fund) => (
           <CreatedFundItem key={fund.id}>
             <FundImageContainer>
               <Feather
                 name={
                   {
-                    Honeymoon: "umbrella",
-                    "Home Down Payment": "home",
-                    Experiences: "map",
-                    Charity: "heart",
+                    "شهر العسل": "umbrella",
+                    "دفعة أولى للمنزل": "home",
+                    التجارب: "map",
+                    الخيرية: "heart",
                   }[fund.type] || "dollar-sign"
                 }
                 size={36}
@@ -983,7 +1026,7 @@ const RegistryApp = () => {
             </FundImageContainer>
             <FundDetailsContainer>
               <FundTitle>{fund.title}</FundTitle>
-              <FundGoal>${parseFloat(fund.goal).toLocaleString()}</FundGoal>
+              <FundGoal>{parseFloat(fund.goal).toLocaleString()} ريال</FundGoal>
               <FundDescription>{fund.description}</FundDescription>
               <ProgressContainer>
                 <ProgressBar progress={fund.progress} />
@@ -995,11 +1038,11 @@ const RegistryApp = () => {
     );
   };
 
-  /* =========== RENDER SECTIONS =========== */
+  /* =========== أقسام العرض =========== */
   const renderShopContent = () => {
     return (
       <>
-        <SectionTitle>Browse by category</SectionTitle>
+        <SectionTitle>تصفح حسب الفئة</SectionTitle>
         <CategoryGrid
           categories={categories}
           columnsPerRow={3}
@@ -1008,41 +1051,28 @@ const RegistryApp = () => {
 
         <DividerLine />
 
-        <SectionTitle>Shop our collections</SectionTitle>
+        <SectionTitle>تسوق من مجموعاتنا</SectionTitle>
         <NavItemButton>
-          <CollectionBanner
-            source={{
-              uri: "https://alsallum.s3.eu-north-1.amazonaws.com/FF77B118-D858-4F67-872B-DAA9AF324B25.png",
-            }}
-            resizeMode="cover"
-          />
+          <CollectionBanner source={Popular} resizeMode="cover" />
         </NavItemButton>
 
-        <EssentialsTitle>Wedding Registry Essentials</EssentialsTitle>
+        <EssentialsTitle>أساسيات سجل الزواج</EssentialsTitle>
         <EssentialsSubtitle>
-          Guests love buying them, you love receiving them. These
-          frequently-purchased gifts are popular for a reason.
+          الضيوف يحبون شراءها، وأنتم تحبون استلامها. هذه الهدايا كثيرة الشراء
+          محبوبة لسبب وجيه.
         </EssentialsSubtitle>
 
         <CardContainer>
           <NavItemButton>
             <Card>
-              <CardImage
-                source={{
-                  uri: "https://alsallum.s3.eu-north-1.amazonaws.com/7A4FB89B-0B67-4D87-A0CA-96CE93520164.png",
-                }}
-              />
-              <CardTitle>The Knot Registry Awards 2025</CardTitle>
+              <CardImage source={Essential} />
+              <CardTitle>جوائز سجل العقدة ٢٠٢٥</CardTitle>
             </Card>
           </NavItemButton>
           <NavItemButton>
             <Card>
-              <CardImage
-                source={{
-                  uri: "https://alsallum.s3.eu-north-1.amazonaws.com/7A4FB89B-0B67-4D87-A0CA-96CE93520164.png",
-                }}
-              />
-              <CardTitle>Most-Wanted Gifts</CardTitle>
+              <CardImage source={Essential} />
+              <CardTitle>الهدايا الأكثر طلباً</CardTitle>
             </Card>
           </NavItemButton>
         </CardContainer>
@@ -1050,7 +1080,7 @@ const RegistryApp = () => {
         <DividerLine />
         {renderCashFunds()}
 
-        <SectionTitle>Couples are loving</SectionTitle>
+        <SectionTitle>الأزواج يحبون</SectionTitle>
         <HorizontalItems
           items={slides}
           renderItem={(item, index) => (
@@ -1065,13 +1095,13 @@ const RegistryApp = () => {
 
         <DividerLine />
 
-        {/* Price Section */}
+        {/* قسم الأسعار */}
         <PriceSection>
-          <PriceSectionTitle>Popular gifts by price</PriceSectionTitle>
+          <PriceSectionTitle>الهدايا الشائعة حسب السعر</PriceSectionTitle>
           <PriceText>
-            You've added 0 gifts in the{" "}
-            <PriceHighlight>{activeRange} price range</PriceHighlight>. We
-            recommend adding <PriceHighlight>26 more gifts</PriceHighlight>.
+            لقد أضفت ٠ هدايا في فئة
+            <PriceHighlight>{activeRange}</PriceHighlight>. نوصي بإضافة
+            <PriceHighlight>٢٦ هدية إضافية</PriceHighlight>.
           </PriceText>
         </PriceSection>
 
@@ -1089,7 +1119,7 @@ const RegistryApp = () => {
           ))}
         </PriceRangeContainer2>
 
-        {/* Random products for the chosen price range */}
+        {/* منتجات عشوائية للفئة السعرية المختارة */}
         <HorizontalScroll
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -1110,34 +1140,33 @@ const RegistryApp = () => {
                     />
                   </AddButton>
                 </ProductImageContainer>
-                <BrandText>{product.generic || "Brand"}</BrandText>
+                <BrandText>{product.generic || "العلامة التجارية"}</BrandText>
                 <ProductTitle>{product.name}</ProductTitle>
-                <ProductPrice>SAR {product.price.toFixed(2)}</ProductPrice>
+                <ProductPrice>{product.price.toFixed(2)} ريال</ProductPrice>
               </ProductCard>
             );
           })}
         </HorizontalScroll>
         <SeeMoreButton onPress={fetchProducts}>
-          <SeeMoreText>See more</SeeMoreText>
+          <SeeMoreText>عرض المزيد</SeeMoreText>
         </SeeMoreButton>
 
         <SectionDivider />
 
-        {/* Cash Funds Box */}
+        {/* صندوق الصناديق النقدية */}
         <CashFundContainer>
-          <CashFundTitle>Add Cash Funds to Your Registry</CashFundTitle>
+          <CashFundTitle>أضف الصناديق النقدية إلى سجلك</CashFundTitle>
           <CashFundDescription>
-            Let your guests contribute to your dreams! Create cash funds for
-            your honeymoon, home down payment, or anything else that matters to
-            you.
+            دع ضيوفك يساهمون في أحلامك! أنشئ صناديق نقدية لشهر العسل، الدفعة
+            الأولى للمنزل، أو أي شيء آخر مهم بالنسبة لك.
           </CashFundDescription>
 
           <CashFundRow>
             {[
-              { name: "Honeymoon", icon: "umbrella" },
-              { name: "Home Down Payment", icon: "home" },
-              { name: "Experiences", icon: "map" },
-              { name: "Charity", icon: "heart" },
+              { name: "شهر العسل", icon: "umbrella" },
+              { name: "دفعة أولى للمنزل", icon: "home" },
+              { name: "التجارب", icon: "map" },
+              { name: "الخيرية", icon: "heart" },
             ].map((type) => (
               <CashFundCard
                 key={type.name}
@@ -1153,24 +1182,24 @@ const RegistryApp = () => {
 
           <CreateButton onPress={() => setModalVisible(true)}>
             <Feather name="plus-circle" size={24} color="white" />
-            <CreateButtonText>Create Custom Cash Fund</CreateButtonText>
+            <CreateButtonText>إنشاء صندوق نقدي مخصص</CreateButtonText>
           </CreateButton>
         </CashFundContainer>
 
         <FooterContainer>
           <FooterText>
-            Your wedding registry helps guests find the perfect gift. Add items
-            you'll love and use for years to come.
+            سجل الزواج الخاص بك يساعد الضيوف في العثور على الهدية المثالية. أضف
+            الأشياء التي ستحبها وتستخدمها لسنوات قادمة.
           </FooterText>
           <FooterLinks>
             <FooterLink>
-              <FooterLinkText>FAQ</FooterLinkText>
+              <FooterLinkText>الأسئلة الشائعة</FooterLinkText>
             </FooterLink>
             <FooterLink>
-              <FooterLinkText>Registry Tips</FooterLinkText>
+              <FooterLinkText>نصائح السجل</FooterLinkText>
             </FooterLink>
             <FooterLink>
-              <FooterLinkText>Support</FooterLinkText>
+              <FooterLinkText>الدعم</FooterLinkText>
             </FooterLink>
           </FooterLinks>
         </FooterContainer>
@@ -1181,21 +1210,23 @@ const RegistryApp = () => {
   const renderCategoryView = () => {
     return (
       <>
-        <SectionTitle style={{ marginLeft: 20 }}>
-          {selectedCategory} Products
+        <SectionTitle style={{ marginRight: 20 }}>
+          منتجات {selectedCategory}
         </SectionTitle>
 
         <TouchableOpacity
           onPress={handleCategoryBack}
-          style={{ marginLeft: 20, marginBottom: 10, flexDirection: "row" }}
+          style={{ marginRight: 20, marginBottom: 10, flexDirection: "row" }}
         >
-          <Feather name="arrow-left" size={24} color="black" />
-          <Text style={{ marginLeft: 5, fontSize: 16 }}>Back to Overview</Text>
+          <Feather name="arrow-right" size={24} color="black" />
+          <Text style={{ marginRight: 5, fontSize: 16 }}>
+            العودة إلى النظرة العامة
+          </Text>
         </TouchableOpacity>
 
         {categoryProducts.length === 0 && !catLoading && !catError && (
-          <Text style={{ marginLeft: 20, color: "#666" }}>
-            No products found for {selectedCategory}.
+          <Text style={{ marginRight: 20, color: "#666" }}>
+            لا توجد منتجات لفئة {selectedCategory}.
           </Text>
         )}
 
@@ -1235,9 +1266,9 @@ const RegistryApp = () => {
                       </AddButton>
                     </ProductImageContainer>
                   </NavItemButton>
-                  <BrandText>{product.generic || "Brand"}</BrandText>
+                  <BrandText>{product.generic || "العلامة التجارية"}</BrandText>
                   <ProductTitle>{product.name}</ProductTitle>
-                  <ProductPrice>${product.price.toFixed(2)}</ProductPrice>
+                  <ProductPrice>{product.price.toFixed(2)} ريال</ProductPrice>
                 </ProductCard>
               );
             })
@@ -1251,10 +1282,10 @@ const RegistryApp = () => {
     return (
       <>
         <TrackGiftsMessage>
-          Track guests' gift purchases and cash fund contributions here.
+          تتبع مشتريات الضيوف من الهدايا ومساهمات الصناديق النقدية هنا.
         </TrackGiftsMessage>
         <ShareButton>
-          <ShareButtonText>Share Your Registry</ShareButtonText>
+          <ShareButtonText>شارك سجلك</ShareButtonText>
         </ShareButton>
       </>
     );
@@ -1278,25 +1309,25 @@ const RegistryApp = () => {
     return (
       <>
         <GiftAdvisorContainer>
-          <GiftAdvisorTitle>Gift Advisor</GiftAdvisorTitle>
+          <GiftAdvisorTitle>مستشار الهدايا</GiftAdvisorTitle>
           <GiftAdvisorText>
-            Based on your gift count of <GuestCount>51-100 guests</GuestCount>,
-            we've suggested a gift total for each price range.
+            بناءً على عدد الضيوف <GuestCount>٥١-١٠٠ ضيف</GuestCount>، اقترحنا
+            إجمالي الهدايا لكل فئة سعرية.
           </GiftAdvisorText>
 
           <PriceRangeContainer
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingLeft: 5 }}
+            contentContainerStyle={{ paddingRight: 5 }}
           >
             <PriceRangeCard>
               <PriceRangeHeader>
-                <PriceRangeTitle>$0 - $49 gifts</PriceRangeTitle>
+                <PriceRangeTitle>هدايا ٠ - ٤٩ ريال</PriceRangeTitle>
                 <ShopButton>
-                  <ShopButtonText>Shop</ShopButtonText>
+                  <ShopButtonText>تسوق</ShopButtonText>
                 </ShopButton>
               </PriceRangeHeader>
-              <ProgressInfo>{lowPriceProgress} of 26 added</ProgressInfo>
+              <ProgressInfo>تم إضافة {lowPriceProgress} من ٢٦</ProgressInfo>
               <ProgressBarContainer>
                 <Progress style={{ width: lowPriceProgressPercent }} />
               </ProgressBarContainer>
@@ -1304,12 +1335,12 @@ const RegistryApp = () => {
 
             <PriceRangeCard>
               <PriceRangeHeader>
-                <PriceRangeTitle>$50 - $99 gifts</PriceRangeTitle>
+                <PriceRangeTitle>هدايا ٥٠ - ٩٩ ريال</PriceRangeTitle>
                 <ShopButton>
-                  <ShopButtonText>Shop</ShopButtonText>
+                  <ShopButtonText>تسوق</ShopButtonText>
                 </ShopButton>
               </PriceRangeHeader>
-              <ProgressInfo>{midPriceProgress} of 31 added</ProgressInfo>
+              <ProgressInfo>تم إضافة {midPriceProgress} من ٣١</ProgressInfo>
               <ProgressBarContainer>
                 <Progress style={{ width: midPriceProgressPercent }} />
               </ProgressBarContainer>
@@ -1317,12 +1348,12 @@ const RegistryApp = () => {
 
             <PriceRangeCard>
               <PriceRangeHeader>
-                <PriceRangeTitle>$100 - $149 gifts</PriceRangeTitle>
+                <PriceRangeTitle>هدايا ١٠٠ - ١٤٩ ريال</PriceRangeTitle>
                 <ShopButton>
-                  <ShopButtonText>Shop</ShopButtonText>
+                  <ShopButtonText>تسوق</ShopButtonText>
                 </ShopButton>
               </PriceRangeHeader>
-              <ProgressInfo>0 of 18 added</ProgressInfo>
+              <ProgressInfo>تم إضافة ٠ من ١٨</ProgressInfo>
               <ProgressBarContainer>
                 <Progress style={{ width: "0%" }} />
               </ProgressBarContainer>
@@ -1334,10 +1365,10 @@ const RegistryApp = () => {
 
         <GiftListContainer>
           <GiftListHeader>
-            <GiftListTitle>Gifts</GiftListTitle>
+            <GiftListTitle>الهدايا</GiftListTitle>
             <GiftItemCount>
-              {addedProducts.length} item
-              {addedProducts.length !== 1 ? "s" : ""}
+              {addedProducts.length} عنصر
+              {addedProducts.length !== 1 ? "" : ""}
             </GiftItemCount>
           </GiftListHeader>
 
@@ -1350,7 +1381,7 @@ const RegistryApp = () => {
                 color: "#666",
               }}
             >
-              No products added.
+              لم يتم إضافة أي منتجات.
             </Text>
           ) : (
             <ProductGridWrapper>
@@ -1368,10 +1399,10 @@ const RegistryApp = () => {
                       <Feather name="minus" size={24} color="#fff" />
                     </RemoveButton>
                   </ProductImageContainer>
-                  <BrandText>{product.generic || "Brand"}</BrandText>
+                  <BrandText>{product.generic || "العلامة التجارية"}</BrandText>
                   <ProductTitle>{product.name}</ProductTitle>
-                  <ProductPrice>SAR {product.price.toFixed(2)}</ProductPrice>
-                  <GiftItemStatus>0 of 1 Purchased</GiftItemStatus>
+                  <ProductPrice>{product.price.toFixed(2)} ريال</ProductPrice>
+                  <GiftItemStatus>تم شراء ٠ من ١</GiftItemStatus>
                 </ProductGridItem>
               ))}
             </ProductGridWrapper>
@@ -1385,63 +1416,62 @@ const RegistryApp = () => {
     return (
       <SettingsContentContainer>
         <SettingsSection>
-          <SettingsSectionTitle>Your Registry Page</SettingsSectionTitle>
+          <SettingsSectionTitle>صفحة سجلك</SettingsSectionTitle>
           <LinkBox>
             <LinkText>https://registry.theknot.com/saud-alsallum...</LinkText>
           </LinkBox>
           <ShareLinkButton>
-            <ShareLinkText>Share Link</ShareLinkText>
+            <ShareLinkText>شارك الرابط</ShareLinkText>
           </ShareLinkButton>
         </SettingsSection>
 
         <SettingsSection>
-          <SettingsSectionTitle>Note to Guests</SettingsSectionTitle>
+          <SettingsSectionTitle>ملاحظة للضيوف</SettingsSectionTitle>
           <SettingsSectionSubtitle>
-            Share extra details, or say a quick "thanks!" in advance.
+            شارك تفاصيل إضافية، أو قل "شكراً!" سريعة مقدماً.
           </SettingsSectionSubtitle>
           <EditLink>
-            <EditLinkText>Edit</EditLinkText>
+            <EditLinkText>تعديل</EditLinkText>
           </EditLink>
         </SettingsSection>
 
         <SettingsSection>
-          <SettingsSectionTitle>Your Shipping Address</SettingsSectionTitle>
+          <SettingsSectionTitle>عنوان الشحن الخاص بك</SettingsSectionTitle>
           <SettingsSectionSubtitle>
-            Where should we ship gifts that you’ve added from The Knot?
+            أين يجب أن نشحن الهدايا التي أضفتها من العقدة؟
           </SettingsSectionSubtitle>
           <EditLink>
-            <EditLinkText>Edit</EditLinkText>
+            <EditLinkText>تعديل</EditLinkText>
           </EditLink>
         </SettingsSection>
 
         <SettingsSection>
-          <SettingsSectionTitle>Your Cash Funds</SettingsSectionTitle>
+          <SettingsSectionTitle>صناديقك النقدية</SettingsSectionTitle>
           <SettingsSectionSubtitle>
-            Tell us where to send your cash gifts so guests can easily
-            contribute.
+            أخبرنا أين نرسل هداياك النقدية حتى يتمكن الضيوف من المساهمة بسهولة.
           </SettingsSectionSubtitle>
           <EditLink>
-            <EditLinkText>Edit</EditLinkText>
+            <EditLinkText>تعديل</EditLinkText>
           </EditLink>
         </SettingsSection>
       </SettingsContentContainer>
     );
   };
 
-  // Master function to pick which content to render
+  // الوظيفة الرئيسية لاختيار المحتوى المراد عرضه
   const renderContent = () => {
-    // If we're specifically in "CategoryView"
-    if (activeTab === "CategoryView" && selectedCategory) {
+    // إذا كنا في "عرض الفئة" تحديداً
+    if (activeTab === "عرض الفئة" && selectedCategory) {
       return renderCategoryView();
     }
     switch (activeTab) {
-      case "Overview":
+      case "نظرة عامة":
         return renderShopContent();
-      case "Manage Registry":
+      case "إدارة السجل":
         return renderManageRegistryContent();
-      case "Track Gifts":
+      case "تتبع الهدايا":
         return renderTrackGiftsContent();
-      case "Settings":
+      case "الإعدادات":
         return renderSettingsContent();
       default:
         return renderShopContent();
@@ -1452,15 +1482,15 @@ const RegistryApp = () => {
     <Container>
       <StatusBar barStyle="dark-content" />
 
-      {/* Search Icon */}
-      <SearchIcon>
-        <Feather name="search" size={24} color="black" />
-      </SearchIcon>
+      {/* أيقونة البحث */}
+      <CartIcon onPress={handleCart}>
+        <ImagePro source={Cart} />
+      </CartIcon>
 
-      {/* Main Title */}
-      <RegistryTitle>Registry</RegistryTitle>
+      {/* العنوان الرئيسي */}
+      <RegistryTitle>السجل</RegistryTitle>
 
-      {/* Tabs */}
+      {/* التبويبات */}
       <TabsContainer>
         <TabsScroll horizontal showsHorizontalScrollIndicator={false}>
           {tabs.map((tab) => (
@@ -1476,10 +1506,10 @@ const RegistryApp = () => {
         </TabsScroll>
       </TabsContainer>
 
-      {/* Content */}
+      {/* المحتوى */}
       <ContentContainer>{renderContent()}</ContentContainer>
 
-      {/* Cash Fund Modal */}
+      {/* نافذة الصندوق النقدي المنبثقة */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -1488,26 +1518,26 @@ const RegistryApp = () => {
       >
         <ModalContainer>
           <ModalContent>
-            <ModalTitle>Create Cash Fund</ModalTitle>
+            <ModalTitle>إنشاء صندوق نقدي</ModalTitle>
 
-            <InputLabel>Title</InputLabel>
+            <InputLabel>العنوان</InputLabel>
             <StyledInput
-              placeholder="Fund title (e.g. Dream Honeymoon)"
+              placeholder="عنوان الصندوق (مثل: شهر عسل الأحلام)"
               value={newFund.title}
               onChangeText={(text) => setNewFund({ ...newFund, title: text })}
             />
 
-            <InputLabel>Goal Amount ($)</InputLabel>
+            <InputLabel>مبلغ الهدف (ريال)</InputLabel>
             <StyledInput
-              placeholder="Enter amount (e.g. 2000)"
+              placeholder="أدخل المبلغ (مثل: ٢٠٠٠)"
               keyboardType="numeric"
               value={newFund.goal}
               onChangeText={(text) => setNewFund({ ...newFund, goal: text })}
             />
 
-            <InputLabel>Description (Optional)</InputLabel>
+            <InputLabel>الوصف (اختياري)</InputLabel>
             <StyledInput
-              placeholder="Describe what this fund is for..."
+              placeholder="صف الغرض من هذا الصندوق..."
               multiline
               numberOfLines={3}
               value={newFund.description}
@@ -1518,10 +1548,10 @@ const RegistryApp = () => {
 
             <ModalButtonsContainer>
               <CancelButton onPress={() => setModalVisible(false)}>
-                <ButtonText>Cancel</ButtonText>
+                <ButtonText>إلغاء</ButtonText>
               </CancelButton>
               <SaveButton onPress={handleCreateFund}>
-                <ButtonText light>Create Fund</ButtonText>
+                <ButtonText light>إنشاء الصندوق</ButtonText>
               </SaveButton>
             </ModalButtonsContainer>
           </ModalContent>

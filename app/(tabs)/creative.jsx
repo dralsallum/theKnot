@@ -10,15 +10,14 @@ import {
 import styled from "styled-components/native";
 import { publicRequest, createUserRequest } from "../../requestMethods";
 import { useRouter } from "expo-router";
-import { useSelector } from "react-redux"; // <-- IMPORT from Redux
+import { useSelector } from "react-redux";
 
-/** Example icons/images — replace with your own **/
+// أيقونات/صور
 const EditIcon = require("../../assets/icons/edit.png");
 const HeartIcon = require("../../assets/icons/heart.png");
 const CheckIcon = require("../../assets/icons/check.png");
 const SearchIcon = require("../../assets/icons/search.png");
 
-/* Example images */
 const ExampleVenueImg1 = require("../../assets/images/venue.jpg");
 const BarnImg = require("../../assets/images/beach.jpg");
 const GardenImg = require("../../assets/images/beach.jpg");
@@ -30,46 +29,50 @@ const FloristsImg = require("../../assets/images/beach.jpg");
 const PlannersImg = require("../../assets/images/beach.jpg");
 const VideographersImg = require("../../assets/images/venue.jpg");
 
-/* Example icons for the "all categories" list (replace with your real icons) */
 const GuitarIcon = require("../../assets/icons/guitar.png");
-const PaperGoodsIcon = require("../../assets/icons/guitar.png");
-const OfficiantsIcon = require("../../assets/icons/guitar.png");
-const PhotoBoothIcon = require("../../assets/icons/guitar.png");
-const PhotographerIcon = require("../../assets/icons/guitar.png");
-const ReceptionIcon = require("../../assets/icons/guitar.png");
-const RentalsIcon = require("../../assets/icons/guitar.png");
-const BalloonsIcon = require("../../assets/icons/guitar.png");
-const TransportationIcon = require("../../assets/icons/guitar.png");
-const TravelIcon = require("../../assets/icons/guitar.png");
-const VideoIcon = require("../../assets/icons/guitar.png");
-const PlannerIcon = require("../../assets/icons/guitar.png");
+const PaperGoodsIcon = GuitarIcon;
+const OfficiantsIcon = GuitarIcon;
+const PhotoBoothIcon = GuitarIcon;
+const PhotographerIcon = GuitarIcon;
+const ReceptionIcon = GuitarIcon;
+const RentalsIcon = GuitarIcon;
+const BalloonsIcon = GuitarIcon;
+const TransportationIcon = GuitarIcon;
+const TravelIcon = GuitarIcon;
+const VideoIcon = GuitarIcon;
+const PlannerIcon = GuitarIcon;
 
-// Define vendor categories data for reuse
+/* -------- بيانات ثابتة مترجَمة -------- */
 const popularVenueTypes = [
-  { id: 1, name: "Barn", image: BarnImg },
-  { id: 2, name: "Garden", image: GardenImg },
-  { id: 3, name: "Beach", image: BeachImg },
+  { id: 1, name: "حظيرة", image: BarnImg },
+  { id: 2, name: "حديقة", image: GardenImg },
+  { id: 3, name: "شاطئ", image: BeachImg },
 ];
 
 const guestCountSizes = [
-  "0-50 guests",
-  "51-100 guests",
-  "101-150 guests",
-  "151-200 guests",
-  "201-250 guests",
-  "251-300 guests",
-  "300+ guests",
+  "0-50 ضيف",
+  "51-100 ضيف",
+  "101-150 ضيف",
+  "151-200 ضيف",
+  "201-250 ضيف",
+  "251-300 ضيف",
+  "أكثر من 300 ضيف",
 ];
 
 const vendorCategories = [
-  { id: 1, name: "DJs", image: DJImg, category: "djs" },
-  { id: 2, name: "Bands", image: BandsImg, category: "bands" },
-  { id: 3, name: "Beauty", image: BeautyImg, category: "beauty" },
-  { id: 4, name: "Florists", image: FloristsImg, category: "florists" },
-  { id: 5, name: "Wedding Planners", image: PlannersImg, category: "planners" },
+  { id: 1, name: "منسقو أغاني", image: DJImg, category: "djs" },
+  { id: 2, name: "فرق موسيقية", image: BandsImg, category: "bands" },
+  { id: 3, name: "الجمال", image: BeautyImg, category: "beauty" },
+  { id: 4, name: "منسقو الزهور", image: FloristsImg, category: "florists" },
+  {
+    id: 5,
+    name: "منظّمو حفلات الزفاف",
+    image: PlannersImg,
+    category: "planners",
+  },
   {
     id: 6,
-    name: "Videographers",
+    name: "مصوّرو الفيديو",
     image: VideographersImg,
     category: "videographers",
   },
@@ -78,79 +81,84 @@ const vendorCategories = [
 const allCategories = [
   {
     id: 1,
-    name: "Invitations & Paper Goods",
+    name: "الدعوات والقرطاسية",
     icon: PaperGoodsIcon,
     category: "paper-goods",
   },
   {
     id: 2,
-    name: "Officiants + Premarital Counseling",
+    name: "المأذونون والإرشاد قبل الزواج",
     icon: OfficiantsIcon,
     category: "officiants",
   },
   {
     id: 3,
-    name: "Photo Booths",
+    name: "أكشاك التصوير",
     icon: PhotoBoothIcon,
     category: "photo-booths",
   },
   {
     id: 4,
-    name: "Photographers",
+    name: "المصورون",
     icon: PhotographerIcon,
     category: "photographers",
   },
-  { id: 5, name: "Reception Venues", icon: ReceptionIcon, category: "venues" },
-  { id: 6, name: "Rentals", icon: RentalsIcon, category: "rentals" },
+  { id: 5, name: "أماكن الاستقبال", icon: ReceptionIcon, category: "venues" },
+  { id: 6, name: "التأجير", icon: RentalsIcon, category: "rentals" },
   {
     id: 7,
-    name: "Shower + Party Venues",
+    name: "أماكن الحفلات",
     icon: BalloonsIcon,
     category: "party-venues",
   },
   {
     id: 8,
-    name: "Transportation",
+    name: "المواصلات",
     icon: TransportationIcon,
     category: "transportation",
   },
-  { id: 9, name: "Travel Specialists", icon: TravelIcon, category: "travel" },
-  { id: 10, name: "Videographers", icon: VideoIcon, category: "videographers" },
-  { id: 11, name: "Wedding Planners", icon: PlannerIcon, category: "planners" },
+  { id: 9, name: "متخصصو السفر", icon: TravelIcon, category: "travel" },
+  {
+    id: 10,
+    name: "مصوّرو الفيديو",
+    icon: VideoIcon,
+    category: "videographers",
+  },
+  {
+    id: 11,
+    name: "منظّمو حفلات الزفاف",
+    icon: PlannerIcon,
+    category: "planners",
+  },
 ];
 
+/* ---------- المكوّن ---------- */
 const Vendors = () => {
   const router = useRouter();
-
-  // -------------------------------
-  // Redux + Favorites logic
-  // -------------------------------
   const currentUser = useSelector((state) => state.user.currentUser);
   const isAuthenticated = !!currentUser;
   const userId = currentUser?._id || null;
 
   const [vendors, setVendors] = useState([]);
-  const [userFavorites, setUserFavorites] = useState([]); // track favorite IDs
+  const [userFavorites, setUserFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [weddingInfo, setWeddingInfo] = useState({
+    weddingDate: null,
+    weddingLocation: null,
+    weddingCountry: null,
+    weddingCity: null,
+    partnerName: null,
+  });
 
-  React.useEffect(() => {
-    StatusBar.setBarStyle("dark-content");
-    StatusBar.setBackgroundColor("#fdf8f2");
-  }, []);
-
-  // -------------------------------
-  // Fetch venues
-  // -------------------------------
   useEffect(() => {
     const fetchVenues = async () => {
       try {
         setLoading(true);
-        const res = await publicRequest.get("/vendors?category=venue&new=true");
+        const res = await publicRequest.get("/vendors/category/venues");
         setVendors(res.data);
-      } catch (err) {
-        setError("Failed to fetch venues.");
-        console.log(err);
+      } catch {
+        setError("فشل جلب الأماكن.");
       } finally {
         setLoading(false);
       }
@@ -158,161 +166,124 @@ const Vendors = () => {
     fetchVenues();
   }, []);
 
-  // -------------------------------
-  // Fetch user favorites (if logged in)
-  // -------------------------------
   useEffect(() => {
+    if (!isAuthenticated || !userId) return;
     const fetchUserFavorites = async () => {
-      if (!isAuthenticated || !userId) return;
-
       try {
-        const userReq = createUserRequest(); // properly handles token
-        const response = await userReq.get(`/users/${userId}/favorites`);
-        if (Array.isArray(response.data)) {
-          // If the API returns an array of vendor docs, we can map them to IDs
-          const favoriteIds = response.data.map((fav) =>
-            fav._id ? fav._id : fav
-          );
-          setUserFavorites(favoriteIds);
+        const userReq = createUserRequest();
+        const res = await userReq.get(`/users/${userId}/favorites`);
+        if (Array.isArray(res.data)) {
+          setUserFavorites(res.data.map((v) => (v._id ? v._id : v)));
         }
-      } catch (err) {
-        console.log("Error fetching user favorites:", err);
-      }
+      } catch (_) {}
     };
     fetchUserFavorites();
   }, [isAuthenticated, userId]);
 
-  // -------------------------------
-  // Check if vendor is favorite
-  // -------------------------------
-  const isVendorFavorite = (vendorId) => {
-    return userFavorites.includes(vendorId);
-  };
+  const isVendorFavorite = (id) => userFavorites.includes(id);
 
-  // -------------------------------
-  // Toggle favorite
-  // -------------------------------
-  const toggleFavorite = async (vendorId) => {
+  const toggleFavorite = async (id) => {
     if (!isAuthenticated) {
-      // If user not logged in, prompt or route to sign-in
-      // Could also show an Alert here
       router.push("/sign-in");
       return;
     }
-
     try {
       const userReq = createUserRequest();
-      const currentlyFavorite = isVendorFavorite(vendorId);
+      const fav = isVendorFavorite(id);
 
-      // Optimistic UI update
-      if (currentlyFavorite) {
-        setUserFavorites((prev) => prev.filter((id) => id !== vendorId));
-        await userReq.delete(`/users/${userId}/favorites/${vendorId}`);
-      } else {
-        setUserFavorites((prev) => [...prev, vendorId]);
-        await userReq.post(`/users/${userId}/favorites`, { vendorId });
-      }
-    } catch (err) {
-      console.log("Error toggling favorite:", err);
-      // Revert UI if error
-      if (isVendorFavorite(vendorId)) {
-        setUserFavorites((prev) => prev.filter((id) => id !== vendorId));
-      } else {
-        setUserFavorites((prev) => [...prev, vendorId]);
-      }
+      fav
+        ? setUserFavorites((p) => p.filter((x) => x !== id))
+        : setUserFavorites((p) => [...p, id]);
+
+      fav
+        ? await userReq.delete(`/users/${userId}/favorites/${id}`)
+        : await userReq.post(`/users/${userId}/favorites`, { vendorId: id });
+    } catch (_) {
+      // تراجع في حال الخطأ
+      isVendorFavorite(id)
+        ? setUserFavorites((p) => p.filter((x) => x !== id))
+        : setUserFavorites((p) => [...p, id]);
     }
   };
 
-  const navigateToVendorDetails = (vendorId) => {
-    router.push({
-      pathname: "/booking",
-      params: { id: vendorId },
-    });
-  };
+  const navigateToVendorDetails = (id) =>
+    router.push({ pathname: "/booking", params: { id } });
 
-  // Press "Saved" summary box -> go to "/favorite"
-  const navigateToSaved = () => {
-    router.push("/favorite");
-  };
+  const navigateToSaved = () => router.push("/favorite");
 
-  // Updated navigateToCategory function
-  const navigateToCategory = (category, categoryId = null) => {
-    const id = categoryId || "default";
-    const normalizedCategory = category.toLowerCase().trim();
-
+  const navigateToCategory = (category, id = "default") =>
     router.push({
       pathname: "/category",
-      params: {
-        category: normalizedCategory,
-        id: id,
-      },
+      params: { category: category.toLowerCase(), id },
     });
-  };
 
-  // Helper function to get the first image from a vendor's images array
-  const getVendorImage = (vendor) => {
-    if (vendor.images && vendor.images.length > 0) {
-      return { uri: vendor.images[0] };
-    } else {
-      return ExampleVenueImg1;
+  const getVendorImage = (v) =>
+    v.images?.length ? { uri: v.images[0] } : ExampleVenueImg1;
+
+  useEffect(() => {
+    if (userId) {
+      const fetchWeddingInfo = async () => {
+        try {
+          const res = await createUserRequest().get(
+            `/users/wedding-date/${userId}`
+          );
+          setWeddingInfo(res.data);
+        } catch (err) {
+          console.error("Failed to fetch wedding information:", err);
+          setError("فشل في جلب معلومات الزفاف");
+        }
+      };
+      fetchWeddingInfo();
     }
-  };
+  }, [userId]);
 
   return (
     <Container>
       <ScrollContainer>
-        {/* ----- Top Header (Title, Subtitle, Edit) ----- */}
         <HeaderContainer>
-          <Title>Vendors</Title>
+          <Title>الموردون</Title>
           <SubTitleContainer>
-            <SubTitle>Browse vendors near </SubTitle>
-            <LocationLink onPress={() => {}}>
-              <LocationText>Tangier, VA</LocationText>
+            <SubTitle>تصفّح الموردين بالقرب من </SubTitle>
+            <LocationLink>
+              <LocationText>
+                {weddingInfo.weddingCountry}, {weddingInfo.weddingLocation}
+              </LocationText>
             </LocationLink>
-            <EditButton onPress={() => {}}>
+            <EditButton>
               <EditIconImg source={EditIcon} />
             </EditButton>
           </SubTitleContainer>
         </HeaderContainer>
 
-        {/* SINGLE WRAPPER for Search + Summary */}
+        {/* البحث + الملخّص */}
         <SearchAndSummaryWrapper>
-          {/* Search Bar */}
-          <SearchBarContainer>
-            <SearchIconImg source={SearchIcon} />
-            <SearchTextInput
-              placeholder="Search venues and vendors"
-              placeholderTextColor="#666"
-            />
-          </SearchBarContainer>
-
-          {/* Summary Boxes Row */}
           <SummaryBoxesContainer>
             <SummaryBox onPress={navigateToSaved}>
-              <SummaryBoxTitle>Saved</SummaryBoxTitle>
+              <SummaryBoxTitle>المحفوظة</SummaryBoxTitle>
               <SummaryBoxDescRow>
                 <HeartIconImg source={HeartIcon} />
-                {/* Show how many vendors are saved */}
-                <SummaryBoxDesc>{userFavorites.length} vendors</SummaryBoxDesc>
+                <SummaryBoxDesc>
+                  {`${userFavorites.length} من الموردين`}
+                </SummaryBoxDesc>
               </SummaryBoxDescRow>
             </SummaryBox>
 
             <SummaryBox>
-              <SummaryBoxTitle>Booked</SummaryBoxTitle>
+              <SummaryBoxTitle>المحجوزة</SummaryBoxTitle>
               <SummaryBoxDescRow>
                 <CheckIconImg source={CheckIcon} />
-                <SummaryBoxDesc>0/8 vendors</SummaryBoxDesc>
+                <SummaryBoxDesc>0 / 8 من الموردين</SummaryBoxDesc>
               </SummaryBoxDescRow>
             </SummaryBox>
           </SummaryBoxesContainer>
         </SearchAndSummaryWrapper>
 
         <WhiteSection>
-          {/* Blue Info Block */}
+          {/* بطاقة المعلومات الزرقاء */}
           <InfoBlock>
-            <InfoBlockTitle>Start with venues</InfoBlockTitle>
+            <InfoBlockTitle>ابدأ بالأماكن</InfoBlockTitle>
             <InfoBlockSubtitle>
-              82% of couples book a venue first!
+              ٪82 من الأزواج يحجزون المكان أولاً!
             </InfoBlockSubtitle>
 
             <CardScroll horizontal showsHorizontalScrollIndicator={false}>
@@ -330,45 +301,36 @@ const Vendors = () => {
 
               {!loading &&
                 !error &&
-                vendors.slice(0, 5).map((vendor) => (
+                vendors.slice(0, 5).map((v) => (
                   <TouchableVenueCard
-                    key={vendor._id}
-                    onPress={() => navigateToVendorDetails(vendor._id)}
+                    key={v._id}
+                    onPress={() => navigateToVendorDetails(v._id)}
                   >
-                    {/* Heart Icon Overlay to toggle favorite */}
                     <HeartIconOverlay
                       onPress={(e) => {
-                        e.stopPropagation(); // Prevent card press
-                        toggleFavorite(vendor._id);
+                        e.stopPropagation();
+                        toggleFavorite(v._id);
                       }}
                     >
                       <VendorHeartIcon
                         source={HeartIcon}
                         resizeMode="contain"
-                        // Tint the icon if it's in favorites
-                        style={{
-                          tintColor: isVendorFavorite(vendor._id)
-                            ? "#e066a6"
-                            : "#000",
-                        }}
+                        isFavorite={isVendorFavorite(v._id)}
                       />
                     </HeartIconOverlay>
 
-                    <VenueImage
-                      source={getVendorImage(vendor)}
-                      resizeMode="cover"
-                    />
+                    <VenueImage source={getVendorImage(v)} resizeMode="cover" />
                     <VenueCardContent>
-                      <VenueTitle>{vendor.name}</VenueTitle>
+                      <VenueTitle>{v.name}</VenueTitle>
                       <VenueRating>
-                        ⭐ {vendor.rating} ({vendor.numReviews || 0})
+                        ⭐ {v.rating} ({v.numReviews || 0})
                       </VenueRating>
-                      <VenueLocation>{vendor.location}</VenueLocation>
+                      <VenueLocation>{v.location}</VenueLocation>
                       <VenueExtra>
-                        {vendor.guestRange || "N/A"} • {vendor.priceRange}
+                        {v.guestRange || "N/A"} • {v.priceRange}
                       </VenueExtra>
-                      {vendor.badges?.map((badge) => (
-                        <Badge key={badge}>{badge}</Badge>
+                      {v.badges?.map((b) => (
+                        <Badge key={b}>{b}</Badge>
                       ))}
                     </VenueCardContent>
                   </TouchableVenueCard>
@@ -376,28 +338,25 @@ const Vendors = () => {
             </CardScroll>
           </InfoBlock>
 
-          {/* Explore venues button */}
           <ExploreButton onPress={() => navigateToCategory("venues")}>
-            <ExploreButtonText>Explore venues</ExploreButtonText>
+            <ExploreButtonText>استكشف الأماكن</ExploreButtonText>
           </ExploreButton>
 
-          <LinkText>Booked your venue? Add venue info</LinkText>
+          <LinkText>حجزت مكانك؟ أضف معلومات المكان</LinkText>
 
-          {/* Popular Types of Venues */}
+          {/* أنواع الأماكن الشائعة */}
           <PopularSection>
-            <PopularTitle>Popular types of venues</PopularTitle>
-            <PopularSubtitle>Explore venues by setting</PopularSubtitle>
+            <PopularTitle>أنواع الأماكن الشائعة</PopularTitle>
+            <PopularSubtitle>استكشف الأماكن حسب التصنيف</PopularSubtitle>
 
             <PopularScroll horizontal showsHorizontalScrollIndicator={false}>
-              {popularVenueTypes.map((venue) => (
-                <TypeCard key={venue.id}>
-                  <TypeImage source={venue.image} resizeMode="cover" />
+              {popularVenueTypes.map((v) => (
+                <TypeCard key={v.id}>
+                  <TypeImage source={v.image} resizeMode="cover" />
                   <BlackOverlay>
-                    <TypeName>{venue.name}</TypeName>
-                    <SeeAllButton
-                      onPress={() => navigateToCategory(venue.name)}
-                    >
-                      <SeeAllText>See all</SeeAllText>
+                    <TypeName>{v.name}</TypeName>
+                    <SeeAllButton onPress={() => navigateToCategory(v.name)}>
+                      <SeeAllText>عرض الكل</SeeAllText>
                     </SeeAllButton>
                   </BlackOverlay>
                 </TypeCard>
@@ -405,61 +364,59 @@ const Vendors = () => {
             </PopularScroll>
           </PopularSection>
 
-          {/* Guest Count Block */}
+          {/* عدد الضيوف */}
           <GuestCountBlock>
-            <GuestCountTitle>How many guests will you have?</GuestCountTitle>
-            <GuestCountSubtitle>Explore venues by size</GuestCountSubtitle>
+            <GuestCountTitle>كم عدد الضيوف لديك؟</GuestCountTitle>
+            <GuestCountSubtitle>استكشف الأماكن حسب الحجم</GuestCountSubtitle>
 
             <SizeBoxesContainer>
-              {guestCountSizes.map((size, index) => (
+              {guestCountSizes.map((s, i) => (
                 <SizeBox
-                  key={index}
-                  onPress={() => navigateToCategory("venues", `size-${index}`)}
+                  key={i}
+                  onPress={() => navigateToCategory("venues", `size-${i}`)}
                 >
-                  <SizeBoxText>{size}</SizeBoxText>
+                  <SizeBoxText>{s}</SizeBoxText>
                 </SizeBox>
               ))}
             </SizeBoxesContainer>
           </GuestCountBlock>
 
-          {/* Vendors for your wedding (2-column) */}
+          {/* الموردون لحفل زفافك */}
           <VendorCategoriesSection>
-            <VendorCategoriesTitle>
-              Vendors for your wedding
-            </VendorCategoriesTitle>
+            <VendorCategoriesTitle>موردو حفل زفافك</VendorCategoriesTitle>
             <VendorCategoriesSubtitle>
-              Explore vendor types
+              استكشف أنواع الموردين
             </VendorCategoriesSubtitle>
 
             <TwoColumnList>
-              {vendorCategories.map((vendor) => (
+              {vendorCategories.map((v) => (
                 <TwoColumnItem
-                  key={vendor.id}
-                  onPress={() => navigateToCategory(vendor.category)}
+                  key={v.id}
+                  onPress={() => navigateToCategory(v.category)}
                 >
-                  <TwoColumnIcon source={vendor.image} resizeMode="cover" />
-                  <TwoColumnLabel>{vendor.name}</TwoColumnLabel>
+                  <TwoColumnIcon source={v.image} resizeMode="cover" />
+                  <TwoColumnLabel>{v.name}</TwoColumnLabel>
                 </TwoColumnItem>
               ))}
             </TwoColumnList>
           </VendorCategoriesSection>
 
           <ExploreAllCategoriesTitle>
-            Explore all categories
+            استكشف جميع الفئات
           </ExploreAllCategoriesTitle>
           <AllCategoriesList>
-            {allCategories.map((category) => (
+            {allCategories.map((c) => (
               <CategoryRow
-                key={category.id}
-                onPress={() => navigateToCategory(category.category)}
+                key={c.id}
+                onPress={() => navigateToCategory(c.category)}
               >
-                <CategoryRowIcon source={category.icon} />
-                <CategoryRowLabel>{category.name}</CategoryRowLabel>
+                <CategoryRowIcon source={c.icon} />
+                <CategoryRowLabel>{c.name}</CategoryRowLabel>
               </CategoryRow>
             ))}
           </AllCategoriesList>
 
-          <ImageCreditsLink>View image credits ▾</ImageCreditsLink>
+          <ImageCreditsLink>عرض نسب الصور ▾</ImageCreditsLink>
         </WhiteSection>
       </ScrollContainer>
     </Container>
@@ -475,6 +432,7 @@ export default Vendors;
 const Container = styled.SafeAreaView`
   flex: 1;
   background-color: #fdf8f2;
+  direction: rtl;
 `;
 
 const ScrollContainer = styled.ScrollView`
@@ -495,6 +453,7 @@ const ErrorContainer = styled.View`
 
 const ErrorText = styled.Text`
   color: red;
+  text-align: left;
 `;
 
 /* ---------- Header (Vendors title, location, etc.) --------- */
@@ -508,6 +467,7 @@ const Title = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const SubTitleContainer = styled.View`
@@ -519,6 +479,7 @@ const SubTitleContainer = styled.View`
 const SubTitle = styled.Text`
   font-size: 14px;
   color: #444;
+  text-align: left;
 `;
 
 const LocationLink = styled.TouchableOpacity`
@@ -529,6 +490,7 @@ const LocationText = styled.Text`
   font-size: 14px;
   color: #0066cc;
   text-decoration-line: underline;
+  text-align: left;
 `;
 
 const EditButton = styled.TouchableOpacity`
@@ -544,16 +506,18 @@ const EditIconImg = styled.Image`
 const SearchAndSummaryWrapper = styled.View`
   background-color: #fdf8f2;
   padding: 0 20px 20px;
+  text-align: left;
 `;
 
 /* Search Bar */
 const SearchBarContainer = styled.View`
   background-color: #fff;
   border-radius: 8px;
-  flex-direction: row;
+  flex-direction: row-reverse;
   align-items: center;
   padding: 10px 12px;
   margin-bottom: 16px;
+  text-align: left;
 `;
 
 const SearchIconImg = styled.Image`
@@ -567,6 +531,7 @@ const SearchTextInput = styled.TextInput`
   flex: 1;
   font-size: 14px;
   color: #000;
+  text-align: left;
 `;
 
 /* Summary Boxes Row */
@@ -592,6 +557,7 @@ const SummaryBoxTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 6px;
+  text-align: left;
 `;
 
 const SummaryBoxDescRow = styled.View`
@@ -616,6 +582,7 @@ const CheckIconImg = styled.Image`
 const SummaryBoxDesc = styled.Text`
   font-size: 14px;
   color: #333;
+  text-align: left;
 `;
 
 const WhiteSection = styled.View`
@@ -635,12 +602,14 @@ const InfoBlockTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const InfoBlockSubtitle = styled.Text`
   font-size: 14px;
   color: #333;
   margin-bottom: 12px;
+  text-align: left;
 `;
 
 const CardScroll = styled.ScrollView``;
@@ -661,24 +630,28 @@ const VenueTitle = styled.Text`
   font-weight: 600;
   color: #000;
   margin-bottom: 2px;
+  text-align: left;
 `;
 
 const VenueRating = styled.Text`
   font-size: 12px;
   color: #333;
   margin-bottom: 2px;
+  text-align: left;
 `;
 
 const VenueLocation = styled.Text`
   font-size: 12px;
   color: #666;
   margin-bottom: 2px;
+  text-align: left;
 `;
 
 const VenueExtra = styled.Text`
   font-size: 12px;
   color: #666;
   margin-bottom: 2px;
+  text-align: left;
 `;
 
 const Badge = styled.Text`
@@ -690,6 +663,7 @@ const Badge = styled.Text`
   padding: 2px 6px;
   margin-top: 4px;
   align-self: flex-start;
+  text-align: left;
 `;
 
 const ExploreButton = styled.TouchableOpacity`
@@ -705,6 +679,7 @@ const ExploreButtonText = styled.Text`
   color: #fff;
   font-size: 16px;
   font-weight: 600;
+  text-align: left;
 `;
 
 const LinkText = styled.Text`
@@ -712,6 +687,7 @@ const LinkText = styled.Text`
   font-size: 14px;
   margin-left: 20px;
   margin-bottom: 20px;
+  text-align: left;
 `;
 
 /* Popular types of venues */
@@ -724,12 +700,14 @@ const PopularTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 2px;
+  text-align: left;
 `;
 
 const PopularSubtitle = styled.Text`
   font-size: 14px;
   color: #333;
   margin-bottom: 12px;
+  text-align: left;
 `;
 
 const PopularScroll = styled.ScrollView``;
@@ -765,6 +743,7 @@ const TypeName = styled.Text`
   color: #fff;
   font-size: 16px;
   font-weight: 700;
+  text-align: left;
 `;
 
 const SeeAllButton = styled.TouchableOpacity`
@@ -777,6 +756,7 @@ const SeeAllText = styled.Text`
   color: #fff;
   font-size: 12px;
   font-weight: 600;
+  text-align: left;
 `;
 
 /* Guest Count Block */
@@ -792,12 +772,14 @@ const GuestCountTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 4px;
+  text-align: left;
 `;
 
 const GuestCountSubtitle = styled.Text`
   font-size: 14px;
   color: #333;
   margin-bottom: 12px;
+  text-align: left;
 `;
 
 const SizeBoxesContainer = styled.View`
@@ -819,6 +801,7 @@ const SizeBox = styled.TouchableOpacity`
 const SizeBoxText = styled.Text`
   font-size: 14px;
   color: #000;
+  text-align: left;
 `;
 
 /* 2-column vendor categories */
@@ -831,12 +814,14 @@ const VendorCategoriesTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin-bottom: 2px;
+  text-align: left;
 `;
 
 const VendorCategoriesSubtitle = styled.Text`
   font-size: 14px;
   color: #333;
   margin-bottom: 12px;
+  text-align: left;
 `;
 
 const TwoColumnList = styled.View`
@@ -864,6 +849,7 @@ const TwoColumnLabel = styled.Text`
   font-size: 14px;
   color: #000;
   padding: 8px 0;
+  text-align: left;
 `;
 
 const ExploreAllCategoriesTitle = styled.Text`
@@ -871,6 +857,7 @@ const ExploreAllCategoriesTitle = styled.Text`
   font-weight: 700;
   color: #000;
   margin: 0 20px 10px;
+  text-align: left;
 `;
 
 const AllCategoriesList = styled.View`
@@ -898,6 +885,7 @@ const CategoryRowIcon = styled.Image`
 const CategoryRowLabel = styled.Text`
   font-size: 14px;
   color: #000;
+  text-align: left;
 `;
 
 const ImageCreditsLink = styled.Text`
@@ -905,6 +893,7 @@ const ImageCreditsLink = styled.Text`
   color: #0066cc;
   text-align: center;
   margin-bottom: 20px;
+  text-align: left;
 `;
 
 const TouchableVenueCard = styled.TouchableOpacity`
@@ -929,4 +918,5 @@ const HeartIconOverlay = styled.TouchableOpacity`
 const VendorHeartIcon = styled.Image`
   width: 24px;
   height: 24px;
+  tint-color: ${(props) => (props.isFavorite ? "#e066a6" : "#000")};
 `;

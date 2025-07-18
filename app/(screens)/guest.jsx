@@ -28,6 +28,7 @@ const Container = styled.View`
   flex: 1;
   background-color: #fff6ec;
   padding-top: ${Constants.statusBarHeight}px;
+  direction: rtl;
 `;
 
 const Header = styled.View`
@@ -66,6 +67,7 @@ const TabText = styled.Text`
   font-size: 16px;
   color: ${(props) => (props.active ? "#000" : "#666")};
   font-weight: ${(props) => (props.active ? "bold" : "normal")};
+  text-align: left;
 `;
 
 // ContentWrapper: Main content area.
@@ -84,6 +86,7 @@ const SubHeader = styled.Text`
   font-size: 18px;
   margin-bottom: 20px;
   color: #000;
+  text-align: left;
 `;
 
 const Card = styled.TouchableOpacity`
@@ -119,12 +122,14 @@ const CardTitle = styled.Text`
   font-weight: 600;
   color: #000;
   margin-bottom: 6px;
+  text-align: left;
 `;
 
 const CardSubtitle = styled.Text`
   font-size: 15px;
   color: #666;
   line-height: 20px;
+  text-align: left;
 `;
 
 const CardArrow = styled(Feather)`
@@ -159,12 +164,14 @@ const GuestItemText = styled.Text`
   color: #000;
   font-size: 17px;
   font-weight: 600;
+  text-align: left;
 `;
 
 const GuestCountText = styled.Text`
   font-size: 17px;
   margin-vertical: 20px;
   color: #333;
+  text-align: left;
 `;
 
 // ---------------------- RSVP TAB STYLED COMPONENTS ----------------------
@@ -197,6 +204,7 @@ const InstructionText = styled.Text`
   color: #333;
   line-height: 22px;
   flex: 1;
+  text-align: left;
 `;
 
 const SetupButton = styled.TouchableOpacity`
@@ -216,6 +224,7 @@ const SetupButtonText = styled.Text`
   font-size: 17px;
   color: #fff;
   font-weight: bold;
+  text-align: left;
 `;
 
 const SectionHeader = styled.Text`
@@ -223,6 +232,7 @@ const SectionHeader = styled.Text`
   font-weight: bold;
   margin-bottom: 20px;
   color: #000;
+  text-align: left;
 `;
 
 const OuterCircle = styled.View`
@@ -277,12 +287,14 @@ const LegendLabel = styled.Text`
   font-size: 12px;
   color: #000;
   margin-right: 6px;
+  text-align: left;
 `;
 
 const LegendCount = styled.Text`
   font-size: 15px;
   color: #666;
   font-weight: 500;
+  text-align: left;
 `;
 
 // ---------------------- MESSAGES TAB STYLED COMPONENTS ----------------------
@@ -295,6 +307,7 @@ const MessagesHeader = styled.Text`
   font-weight: bold;
   color: #000;
   margin-bottom: 8px;
+  text-align: left;
 `;
 
 const MessagesSubheader = styled.Text`
@@ -302,6 +315,7 @@ const MessagesSubheader = styled.Text`
   color: #666;
   margin-bottom: 32px;
   line-height: 20px;
+  text-align: left;
 `;
 
 const TemplateHeader = styled.Text`
@@ -309,6 +323,7 @@ const TemplateHeader = styled.Text`
   font-weight: 600;
   color: #000;
   margin-bottom: 16px;
+  text-align: left;
 `;
 
 const TemplateGrid = styled.View`
@@ -345,6 +360,7 @@ const SentMessagesHeader = styled.Text`
   font-weight: 600;
   color: #000;
   margin-bottom: 16px;
+  text-align: left;
 `;
 
 const PlaceholderContainer = styled.View`
@@ -388,6 +404,7 @@ const ModalHeaderButton = styled.Text`
   font-size: 17px;
   color: ${(props) => (props.disabled ? "#ccc" : props.color || "#000")};
   padding: 4px;
+  text-align: left;
 `;
 
 const ModalTitle = styled.Text`
@@ -405,6 +422,7 @@ const SectionTitle = styled.Text`
   font-weight: bold;
   margin-bottom: 24px;
   color: #000;
+  text-align: left;
 `;
 
 const InputRow = styled.View`
@@ -433,6 +451,7 @@ const CheckboxLabel = styled.Text`
   font-size: 17px;
   margin-left: 12px;
   color: #333;
+  text-align: left;
 `;
 
 const AddMoreButton = styled.TouchableOpacity`
@@ -446,6 +465,7 @@ const AddMoreButtonText = styled.Text`
   color: #0084ff;
   font-size: 16px;
   margin-left: 10px;
+  text-align: left;
 `;
 
 const ContactInfoSection = styled.View`
@@ -510,6 +530,7 @@ const FilterText = styled.Text`
   color: ${(props) => (props.active ? "#fff" : "#000")};
   font-size: 15px;
   font-weight: 500;
+  text-align: left;
 `;
 
 const AddButton = styled.TouchableOpacity`
@@ -524,6 +545,7 @@ const AddButtonText = styled.Text`
   color: #0084ff;
   font-size: 15px;
   margin-left: 6px;
+  text-align: left;
 `;
 
 // ---------------------- EVENTS TAB STYLED COMPONENTS ----------------------
@@ -554,6 +576,7 @@ const EventTitle = styled.Text`
   font-weight: bold;
   color: #000;
   margin-bottom: 12px;
+  text-align: left;
 `;
 
 const EditIcon = styled.TouchableOpacity`
@@ -571,6 +594,7 @@ const EventInfoText = styled.Text`
   color: #000;
   font-size: 15px;
   margin-left: 8px;
+  text-align: left;
 `;
 
 const AddEventContainer = styled.View`
@@ -583,6 +607,7 @@ const AddEventText = styled.Text`
   color: #0084ff;
   font-size: 17px;
   font-weight: 500;
+  text-align: left;
 `;
 
 // Button in bottom right
@@ -602,13 +627,22 @@ const FloatingButton = styled.TouchableOpacity`
   shadow-radius: 5px;
   elevation: 5;
 `;
+const Footer = styled.View`
+  background-color: #fff;
+  padding: 25px;
+  border-top-width: 1px;
+  border-top-color: #eee;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+`;
 
 // ---------------------- MAIN COMPONENT ----------------------
 const Guest = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("Guests");
+  const [activeTab, setActiveTab] = useState("الضيوف");
   const [hasGuests, setHasGuests] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("All events");
+  const [activeFilter, setActiveFilter] = useState("جميع الفعاليات");
   const [guestsList, setGuestsList] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -640,14 +674,14 @@ const Guest = () => {
       setHasGuests(res.data.length > 0);
     } catch (err) {
       console.error("Error fetching guests:", err);
-      Alert.alert("Error", "Could not fetch guests");
+      Alert.alert("خطأ", "لا يمكن جلب قائمة الضيوف");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (activeTab === "Guests") {
+    if (activeTab === "الضيوف") {
       fetchGuests();
     }
   }, [activeTab]);
@@ -660,20 +694,20 @@ const Guest = () => {
   // Options for the guest card actions.
   const guestCards = [
     {
-      title: "Add from contacts",
-      subtitle: "Pick guests right from your phone.",
+      title: "إضافة من جهات الاتصال",
+      subtitle: "اختر الضيوف مباشرة من هاتفك.",
       icon: "user-plus",
       onPress: () => console.log("Add from contacts pressed"),
     },
     {
-      title: "Add one by one",
-      subtitle: "Type guests' names and contact info.",
+      title: "إضافة واحد تلو الآخر",
+      subtitle: "اكتب أسماء الضيوف ومعلومات الاتصال.",
       icon: "edit-3",
       onPress: () => setIsModalVisible(true),
     },
     {
-      title: "Send guests a form",
-      subtitle: "Share your address collection form.",
+      title: "إرسال نموذج للضيوف",
+      subtitle: "شارك نموذج جمع العناوين الخاص بك.",
       icon: "file-text",
       onPress: () => console.log("Send guests a form pressed"),
     },
@@ -682,11 +716,11 @@ const Guest = () => {
   // Save guest to backend
   const handleSaveGuest = async () => {
     if (!firstName.trim() && !lastName.trim()) {
-      Alert.alert("Validation", "Please enter a guest name.");
+      Alert.alert("التحقق", "يرجى إدخال اسم الضيف.");
       return;
     }
     if (!userId) {
-      Alert.alert("Not logged in", "Please log in before adding guests.");
+      Alert.alert("غير مسجل الدخول", "يرجى تسجيل الدخول قبل إضافة الضيوف.");
       return;
     }
 
@@ -702,7 +736,7 @@ const Guest = () => {
         mailingAddress: mailingAddress.trim(),
         notes: notes.trim(),
         // If user checked the box, eventName = "Wedding Day"
-        eventName: isWeddingDay ? "Wedding Day" : "",
+        eventName: isWeddingDay ? "يوم الزفاف" : "",
       };
 
       const reqInstance = createUserRequest();
@@ -716,7 +750,7 @@ const Guest = () => {
       setIsModalVisible(false);
     } catch (err) {
       console.error("Error saving guest:", err);
-      Alert.alert("Error", "Could not save guest");
+      Alert.alert("خطأ", "لا يمكن حفظ الضيف");
     } finally {
       setLoading(false);
     }
@@ -750,7 +784,7 @@ const Guest = () => {
 
   // Count how many guests are assigned to "Wedding Day"
   const weddingDayCount = guestsList.filter(
-    (guest) => guest.eventName.toLowerCase() === "wedding day"
+    (guest) => guest.eventName.toLowerCase() === "يوم الزفاف"
   ).length;
 
   // Render tab-specific content.
@@ -766,12 +800,12 @@ const Guest = () => {
       );
     }
 
-    if (activeTab === "Guests") {
+    if (activeTab === "الضيوف") {
       // If no guests, show the initial "add guests" screen.
       if (!hasGuests) {
         return (
           <GuestContainer>
-            <SubHeader>Let's add guests! Choose how:</SubHeader>
+            <SubHeader>لنضيف الضيوف! اختر الطريقة:</SubHeader>
             {guestCards.map((card, index) => (
               <Card key={index} onPress={card.onPress}>
                 <IconWrapper>
@@ -781,11 +815,11 @@ const Guest = () => {
                   <CardTitle>{card.title}</CardTitle>
                   <CardSubtitle>{card.subtitle}</CardSubtitle>
                 </CardTextContainer>
-                <CardArrow name="chevron-right" size={24} />
+                <CardArrow name="chevron-left" size={24} />
               </Card>
             ))}
             <TouchableOpacity onPress={handleLearnMore}>
-              <FooterLink>Fancy a spreadsheet template? Learn more</FooterLink>
+              <FooterLink>تريد قالب جدول بيانات؟ تعلم المزيد</FooterLink>
             </TouchableOpacity>
           </GuestContainer>
         );
@@ -795,36 +829,36 @@ const Guest = () => {
           <GuestContainer>
             <SearchBar>
               <Feather name="search" size={20} color="#777" />
-              <SearchInput placeholder="Search for Guests" />
+              <SearchInput placeholder="البحث عن الضيوف" />
             </SearchBar>
 
             <FilterSection>
               <FilterButton
-                active={activeFilter === "All events"}
-                onPress={() => setActiveFilter("All events")}
+                active={activeFilter === "جميع الفعاليات"}
+                onPress={() => setActiveFilter("جميع الفعاليات")}
               >
-                <FilterText active={activeFilter === "All events"}>
-                  All events
+                <FilterText active={activeFilter === "جميع الفعاليات"}>
+                  جميع الفعاليات
                 </FilterText>
               </FilterButton>
 
               <FilterButton
-                active={activeFilter === "Wedding Day"}
-                onPress={() => setActiveFilter("Wedding Day")}
+                active={activeFilter === "يوم الزفاف"}
+                onPress={() => setActiveFilter("يوم الزفاف")}
               >
-                <FilterText active={activeFilter === "Wedding Day"}>
-                  Wedding Day
+                <FilterText active={activeFilter === "يوم الزفاف"}>
+                  يوم الزفاف
                 </FilterText>
               </FilterButton>
 
               <AddButton onPress={() => console.log("Add new event")}>
                 <Feather name="plus-circle" size={20} color="#0084ff" />
-                <AddButtonText>Add new event</AddButtonText>
+                <AddButtonText>إضافة فعالية جديدة</AddButtonText>
               </AddButton>
             </FilterSection>
 
             <GuestCountText>
-              {guestsList.length} {guestsList.length === 1 ? "Guest" : "Guests"}
+              {guestsList.length} {guestsList.length === 1 ? "ضيف" : "ضيوف"}
             </GuestCountText>
 
             <FlatList
@@ -842,14 +876,14 @@ const Guest = () => {
           </GuestContainer>
         );
       }
-    } else if (activeTab === "Events") {
+    } else if (activeTab === "الفعاليات") {
       // Updated "Events" tab to match your screenshot
       return (
         <EventsContainer>
           {/* Single event card */}
           <EventCard>
             <EventTopRow>
-              <EventTitle>Wedding Day</EventTitle>
+              <EventTitle>يوم الزفاف</EventTitle>
               <EditIcon onPress={() => console.log("Edit event pressed")}>
                 <Feather name="edit-2" size={20} color="#000" />
               </EditIcon>
@@ -859,10 +893,10 @@ const Guest = () => {
                 name="user"
                 size={16}
                 color="#000"
-                style={{ marginRight: 4 }}
+                style={{ marginLeft: 4 }}
               />
               <EventInfoText>
-                {weddingDayCount} {weddingDayCount === 1 ? "Guest" : "Guests"}
+                {weddingDayCount} {weddingDayCount === 1 ? "ضيف" : "ضيوف"}
               </EventInfoText>
 
               {/* Add spacing between icons */}
@@ -872,9 +906,9 @@ const Guest = () => {
                 name="calendar"
                 size={16}
                 color="#000"
-                style={{ marginRight: 4 }}
+                style={{ marginLeft: 4 }}
               />
-              <EventInfoText>Friday, Apr 7</EventInfoText>
+              <EventInfoText>الجمعة، 7 أبريل</EventInfoText>
             </EventInfoRow>
           </EventCard>
 
@@ -883,7 +917,7 @@ const Guest = () => {
             <TouchableOpacity
               onPress={() => console.log("Add an event pressed")}
             >
-              <AddEventText>Add an event</AddEventText>
+              <AddEventText>إضافة فعالية</AddEventText>
             </TouchableOpacity>
           </AddEventContainer>
 
@@ -895,81 +929,78 @@ const Guest = () => {
           </FloatingButton>
         </EventsContainer>
       );
-    } else if (activeTab === "RSVPs") {
+    } else if (activeTab === "الردود") {
       return (
         <RsvpContainer>
           <InstructionList>
             <InstructionItem>
               <Bullet />
-              <InstructionText>Customize your RSVP page.</InstructionText>
+              <InstructionText>تخصيص صفحة الردود الخاصة بك.</InstructionText>
             </InstructionItem>
             <InstructionItem>
               <Bullet />
-              <InstructionText>
-                Share your website URL with guests.
-              </InstructionText>
+              <InstructionText>شارك رابط موقعك مع الضيوف.</InstructionText>
             </InstructionItem>
             <InstructionItem>
               <Bullet />
-              <InstructionText>Easily track guests' responses!</InstructionText>
+              <InstructionText>تتبع ردود الضيوف بسهولة!</InstructionText>
             </InstructionItem>
           </InstructionList>
           <SetupButton onPress={() => console.log("Set up RSVPs pressed")}>
-            <SetupButtonText>Set up RSVPs</SetupButtonText>
+            <SetupButtonText>إعداد الردود</SetupButtonText>
           </SetupButton>
-          <SectionHeader>Wedding Day</SectionHeader>
+          <SectionHeader>يوم الزفاف</SectionHeader>
           <OuterCircle>
             <InnerCircle>
-              <GaugeText>0 / 1 responded</GaugeText>
+              <GaugeText>0 / 1 رد</GaugeText>
             </InnerCircle>
           </OuterCircle>
           <LegendContainer>
             <LegendItem>
               <ColorBox color="green" />
-              <LegendLabel>Attending</LegendLabel>
+              <LegendLabel>سيحضر</LegendLabel>
               <LegendCount>0</LegendCount>
             </LegendItem>
             <LegendItem>
               <ColorBox color="red" />
-              <LegendLabel>Declined</LegendLabel>
+              <LegendLabel>رفض</LegendLabel>
               <LegendCount>0</LegendCount>
             </LegendItem>
             <LegendItem>
               <ColorBox color="#ccc" />
-              <LegendLabel>No response</LegendLabel>
+              <LegendLabel>لا يوجد رد</LegendLabel>
               <LegendCount>1</LegendCount>
             </LegendItem>
           </LegendContainer>
         </RsvpContainer>
       );
-    } else if (activeTab === "Messages") {
+    } else if (activeTab === "الرسائل") {
       return (
         <MessagesContainer>
-          <MessagesHeader>Reach Out to Guests</MessagesHeader>
+          <MessagesHeader>التواصل مع الضيوف</MessagesHeader>
           <MessagesSubheader>
-            Easily share details and send reminders to your guests.
+            شارك التفاصيل بسهولة وأرسل تذكيرات لضيوفك.
           </MessagesSubheader>
-          <TemplateHeader>Choose a Template:</TemplateHeader>
+          <TemplateHeader>اختر قالباً:</TemplateHeader>
           <TemplateGrid>
             <TemplateCard onPress={() => {}}>
-              <TemplateCardText>Share your website</TemplateCardText>
+              <TemplateCardText>شارك موقعك</TemplateCardText>
             </TemplateCard>
             <TemplateCard onPress={() => {}}>
-              <TemplateCardText>Collect addresses</TemplateCardText>
+              <TemplateCardText>جمع العناوين</TemplateCardText>
             </TemplateCard>
             <TemplateCard onPress={() => {}}>
-              <TemplateCardText>Custom message</TemplateCardText>
+              <TemplateCardText>رسالة مخصصة</TemplateCardText>
             </TemplateCard>
             <TemplateCard onPress={() => {}}>
-              <TemplateCardText>Remind guests to RSVP</TemplateCardText>
+              <TemplateCardText>تذكير الضيوف بالرد</TemplateCardText>
             </TemplateCard>
           </TemplateGrid>
-          <SentMessagesHeader>Sent Messages:</SentMessagesHeader>
+          <SentMessagesHeader>الرسائل المرسلة:</SentMessagesHeader>
           <PlaceholderContainer>
             <PlaceholderImage />
             <PlaceholderMessage>
-              You haven't sent any messages yet, but you'll see them here once
-              you do.
+              لم ترسل أي رسائل بعد، ولكن ستراها هنا عندما تفعل ذلك.
             </PlaceholderMessage>
           </PlaceholderContainer>
         </MessagesContainer>
@@ -985,14 +1016,14 @@ const Guest = () => {
       {/* Header */}
       <Header>
         <TouchableOpacity onPress={() => router.back()}>
-          <Feather name="arrow-left" size={24} color="#000" />
+          <Feather name="arrow-right" size={24} color="#000" />
         </TouchableOpacity>
-        <Title>Guests & RSVP</Title>
+        <Title>الضيوف والردود</Title>
       </Header>
 
       {/* Tab Bar */}
       <TabBar>
-        {["Guests", "Events", "RSVPs", "Messages"].map((tab) => (
+        {["الضيوف", "الفعاليات", "الردود", "الرسائل"].map((tab) => (
           <TabButton
             key={tab}
             active={activeTab === tab}
@@ -1015,9 +1046,9 @@ const Guest = () => {
         <ModalContainer>
           <ModalHeader>
             <TouchableOpacity onPress={cancelModal}>
-              <ModalHeaderButton>Cancel</ModalHeaderButton>
+              <ModalHeaderButton>إلغاء</ModalHeaderButton>
             </TouchableOpacity>
-            <ModalTitle>Add Guest</ModalTitle>
+            <ModalTitle>إضافة ضيف</ModalTitle>
             <TouchableOpacity
               onPress={handleSaveGuest}
               disabled={!firstName.trim() && !lastName.trim()}
@@ -1026,32 +1057,32 @@ const Guest = () => {
                 color="#0084ff"
                 disabled={!firstName.trim() && !lastName.trim()}
               >
-                Save
+                حفظ
               </ModalHeaderButton>
             </TouchableOpacity>
           </ModalHeader>
           <ScrollView>
             {/* Guest Names Section */}
             <FormSection>
-              <SectionTitle>Guest Names</SectionTitle>
+              <SectionTitle>أسماء الضيوف</SectionTitle>
               <InputRow>
                 <Feather
                   name="user"
                   size={24}
                   color="#000"
-                  style={{ marginRight: 12 }}
+                  style={{ marginLeft: 12 }}
                 />
                 <View style={{ flex: 1, flexDirection: "row" }}>
-                  <View style={{ flex: 1, marginRight: 8 }}>
+                  <View style={{ flex: 1, marginLeft: 8 }}>
                     <StyledInput
-                      placeholder="First Name"
+                      placeholder="الاسم الأول"
                       value={firstName}
                       onChangeText={setFirstName}
                     />
                   </View>
-                  <View style={{ flex: 1, marginLeft: 8 }}>
+                  <View style={{ flex: 1, marginRight: 8 }}>
                     <StyledInput
-                      placeholder="Last Name"
+                      placeholder="اسم العائلة"
                       value={lastName}
                       onChangeText={setLastName}
                     />
@@ -1063,33 +1094,33 @@ const Guest = () => {
                   checked={isWeddingDay}
                   onPress={() => setIsWeddingDay(!isWeddingDay)}
                 />
-                <CheckboxLabel>Wedding Day</CheckboxLabel>
+                <CheckboxLabel>يوم الزفاف</CheckboxLabel>
               </CheckboxContainer>
               <AddMoreButton>
                 <Feather name="plus-circle" size={24} color="#0084ff" />
-                <AddMoreButtonText>Add another guest</AddMoreButtonText>
+                <AddMoreButtonText>إضافة ضيف آخر</AddMoreButtonText>
               </AddMoreButton>
             </FormSection>
 
             {/* Contact Info Section */}
             <ContactInfoSection>
-              <SectionTitle>Contact Info</SectionTitle>
+              <SectionTitle>معلومات الاتصال</SectionTitle>
               <StyledInput
-                placeholder="Phone Number"
+                placeholder="رقم الهاتف"
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
                 style={{ marginBottom: 16 }}
               />
               <StyledInput
-                placeholder="Email Address"
+                placeholder="عنوان البريد الإلكتروني"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 style={{ marginBottom: 16 }}
               />
               <StyledInput
-                placeholder="Mailing Address"
+                placeholder="عنوان المراسلة"
                 value={mailingAddress}
                 onChangeText={setMailingAddress}
               />
@@ -1097,9 +1128,9 @@ const Guest = () => {
 
             {/* Notes Section */}
             <NotesSection>
-              <SectionTitle>Notes</SectionTitle>
+              <SectionTitle>ملاحظات</SectionTitle>
               <NotesInput
-                placeholder="Enter notes about your guests, like food allergies"
+                placeholder="أدخل ملاحظات حول ضيوفك، مثل الحساسية الغذائية"
                 value={notes}
                 onChangeText={setNotes}
                 multiline
@@ -1110,20 +1141,10 @@ const Guest = () => {
       </Modal>
 
       {/* Bottom button for adding a guest (when guests exist) */}
-      {hasGuests && activeTab === "Guests" && (
-        <View
-          style={{
-            backgroundColor: "#fff",
-            padding: 25,
-            borderTopWidth: 1,
-            borderTopColor: "#eee",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+      {hasGuests && activeTab === "الضيوف" && (
+        <Footer>
           <AddButtonText style={{ color: "#0084ff", fontSize: 18 }}>
-            Add a guest
+            إضافة ضيف
           </AddButtonText>
           <TouchableOpacity onPress={() => setIsModalVisible(true)}>
             <View
@@ -1139,7 +1160,7 @@ const Guest = () => {
               <Feather name="plus" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
-        </View>
+        </Footer>
       )}
     </Container>
   );

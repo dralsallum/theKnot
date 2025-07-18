@@ -22,7 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Predefined colors for accounts
 const ACCOUNT_COLORS = [
-  "#4c47e8",
+  "#ff69b4",
   "#6BCB77",
   "#FF6B6B",
   "#FFD93D",
@@ -127,7 +127,6 @@ const Input = styled.TextInput`
 `;
 
 const Button = styled.TouchableOpacity`
-  background-color: #ffffff;
   border: 2px solid #ffffff;
   border-radius: 10px;
   align-items: center;
@@ -139,7 +138,7 @@ const Button = styled.TouchableOpacity`
   shadow-opacity: 0.15;
   shadow-radius: 4px;
   elevation: 3;
-  background-color: ${(props) => props.bgColor || "#4c47e8"};
+  background-color: ${(props) => props.bgColor || "#ff69b4"};
 `;
 
 const ButtonText = styled.Text`
@@ -154,7 +153,7 @@ const SecondaryButton = styled.TouchableOpacity`
 `;
 
 const SecondaryButtonText = styled.Text`
-  color: #4c47e8;
+  color: #ff69b4;
   font-size: 16px;
   font-weight: 500;
 `;
@@ -170,7 +169,7 @@ const ForgotPasswordTextOld = styled.Text`
   font-weight: 600;
 `;
 const ForgotPasswordTextNew = styled.Text`
-  color: #4c47e8;
+  color: #ff69b4;
   font-size: 15px;
   font-weight: 600;
 `;
@@ -191,7 +190,7 @@ const TermsText = styled.Text`
 `;
 
 const TermsLink = styled.Text`
-  color: #4c47e8;
+  color: #ff69b4;
   font-weight: 500;
   text-decoration: underline;
   text-align: center;
@@ -243,7 +242,7 @@ const SignIn = () => {
         if (accounts !== null) {
           const parsedAccounts = JSON.parse(accounts).map((account, idx) => ({
             ...account,
-            username: capitalizeFirstLetter(account.username), // Ensure capitalization
+            username: capitalizeFirstLetter(account.username),
             color: getAccountColor(idx),
           }));
           setSavedAccounts(parsedAccounts);

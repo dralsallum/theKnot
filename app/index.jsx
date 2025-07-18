@@ -36,7 +36,7 @@ const Index = () => {
             height: 250,
           }}
         />
-        <Subtitle>ابدأ رحلتك التعليمية. اليوم!</Subtitle>
+        <Subtitle>ابدأ رحلة الزواج. اليوم!</Subtitle>
         <ButtonContainer>
           <Button onPress={handleButtonPress} isLoading={isLoading}>
             <ButtonText>ابدأ الآن</ButtonText>
@@ -67,7 +67,7 @@ const Container = styled.View`
 `;
 
 const Subtitle = styled.Text`
-  color: #4c47e8;
+  color: #ff69b4;
   font-size: 28px;
   text-align: center;
   margin-bottom: 40px;
@@ -96,14 +96,14 @@ const Button = styled.TouchableOpacity`
   shadow-radius: 3.84px;
   elevation: 5;
   opacity: ${(props) => (props.isLoading ? 0.5 : 1)};
-  background-color: #4c47e8;
+  background-color: #ff69b4;
 `;
 
 const ButtonSign = styled.TouchableOpacity`
   border-radius: 25px;
   padding: 15px 0;
   width: 100%;
-  border: 1px solid #4c47e8;
+  border: 1px solid #ff69b4;
   shadow-color: #000;
   shadow-opacity: 0.25;
   shadow-radius: 3.84px;
@@ -119,7 +119,7 @@ const ButtonText = styled.Text`
 `;
 
 const TextSign = styled.Text`
-  color: #4c47e8;
+  color: #ff69b4;
   font-size: 18px;
   font-weight: bold;
   text-align: center;

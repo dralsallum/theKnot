@@ -24,6 +24,7 @@ const ScreensLayout = () => {
         <Stack.Screen name="guest" options={{ headerShown: false }} />
         <Stack.Screen name="checklist" options={{ headerShown: false }} />
         <Stack.Screen name="favorite" options={{ headerShown: false }} />
+        <Stack.Screen name="pay" options={{ headerShown: false }} />
       </Stack>
       <StatusBar backgroundColor="#161622" style="dark" />
     </>

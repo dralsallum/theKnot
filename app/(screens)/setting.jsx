@@ -45,6 +45,7 @@ const HeaderBar = styled.View`
   padding-top: ${STATUSBAR_HEIGHT}px;
   padding-bottom: 16px;
   background-color: #fdf8f2;
+  margin-top: 10px;
 `;
 
 // Back button styled as a simple touchable area
@@ -157,7 +158,7 @@ const Button = styled.TouchableOpacity`
   padding: 10px;
   border-radius: 8px;
   align-items: center;
-  margin: 10px;
+  margin: 10px 10px 20px 10px;
 `;
 
 // Text styling for buttons
