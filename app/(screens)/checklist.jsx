@@ -120,7 +120,7 @@ const HeaderTop = styled.View`
 `;
 
 const BackButton = styled.TouchableOpacity`
-  margin-right: 16px;
+  margin-right: 1٢px;
 `;
 
 const Title = styled.Text`
@@ -198,7 +198,7 @@ const PlusButton = styled.View`
   align-items: center;
   justify-content: center;
   position: absolute;
-  right: 16px;
+  left: 16px;
 `;
 
 const PlusIcon = styled.Text`

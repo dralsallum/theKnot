@@ -28,7 +28,7 @@
         "buildType": "app-bundle"
       },
       "ios": {
-        "image": "macos-sequoia-15.3-xcode-16.2"
+        "buildConfiguration": "Release"
       },
       "env": {
         "EXPO_NO_DEBUG": "true"

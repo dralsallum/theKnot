@@ -8,7 +8,6 @@ import styled from "styled-components/native";
 import LottieView from "lottie-react-native";
 
 const Index = () => {
-  // Local state for any loading you may do
   const [isLoading, setIsLoading] = useState(false);
   const { currentUser } = useSelector(userSelector);
   if (currentUser) {

@@ -2,7 +2,7 @@
   "expo": {
     "name": "theknot",
     "slug": "theknot",
-    "version": "1.6.5",
+    "version": "1.7.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "theknot",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dralsallum.theknot",
-      "buildNumber": "47",
+      "buildNumber": "54",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -72,7 +72,7 @@
           }
         ],
         "NSPrivacyPolicyURL": "https://www.treatment.net/privacy-policy",
-        "LSMinimumSystemVersion": "14.0"
+        "LSMinimumSystemVersion": "12.0"
       },
       "notification": {
         "icon": "./assets/icons/notification.png",
@@ -106,11 +106,16 @@
     },
     "plugins": [
       "expo-router",
-      "expo-splash-screen",
       "react-native-iap",
 
       "react-native-video",
-      "expo-secure-store"
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/notification.png",
+          "color": "#0178ff"
+        }
+      ]
     ],
     "extra": {
       "router": {
@@ -123,11 +128,6 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
-    "notification": {
-      "icon": "./assets/icons/notification.png",
-      "color": "#0178ff"
-    },
-    "owner": "dralsallum"
+    "assetBundlePatterns": ["**/*"]
   }
 }

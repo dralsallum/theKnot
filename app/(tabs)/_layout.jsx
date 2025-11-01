@@ -10,24 +10,24 @@ import { icons } from "../../constants";
 
 const theme = {
   colors: {
-    // Changed from yellow (#f9c136) to pink (#FF4081)
     activeTint: "#FF4081",
     inactiveTint: "#666e7e",
     background: "#ffffff",
     borderTop: "#b2b2b2",
     shadow: "#000",
-    // Also changed textActive to pink
     textActive: "#FF4081",
     textInactive: "#666e7e",
   },
   sizes: {
     tabBarHeight: 65,
-    tabBarHeightTablet: 100,
-    paddingBottom: 10,
-    paddingBottomTablet: 15,
+    tabBarHeightTablet: 90,
+    paddingTop: 8,
+    paddingTopTablet: 12,
+    paddingBottom: 8,
+    paddingBottomTablet: 12,
     iconSize: 24,
-    iconSizeTablet: 35,
-    fontSize: 12,
+    iconSizeTablet: 32,
+    fontSize: 11,
     fontSizeTablet: 13,
     fontWeightActive: "600",
     fontWeightInactive: "400",
@@ -37,7 +37,7 @@ const theme = {
     elevation: 4,
   },
   spacing: {
-    gap: "2px",
+    gap: 4,
   },
   fonts: {
     primary: "System",
@@ -80,6 +80,9 @@ const TabNavigator = () => {
       height: isTablet
         ? theme.sizes.tabBarHeightTablet
         : theme.sizes.tabBarHeight,
+      paddingTop: isTablet
+        ? theme.sizes.paddingTopTablet
+        : theme.sizes.paddingTop,
       paddingBottom: isTablet
         ? theme.sizes.paddingBottomTablet
         : theme.sizes.paddingBottom,
@@ -91,7 +94,6 @@ const TabNavigator = () => {
     },
   };
 
-  // Add a new screen for "Planning"
   const screens = [
     {
       name: "home",
@@ -104,9 +106,8 @@ const TabNavigator = () => {
       icon: icons.words,
     },
     {
-      name: "planning", // New Planning Tab
+      name: "planning",
       title: "التخطيط",
-
       icon: icons.stories,
     },
     {
@@ -160,12 +161,15 @@ export default TabNavigator;
 const IconContainer = styled.View`
   justify-content: center;
   align-items: center;
-  gap: ${(props) => props.theme.spacing.gap};
+  gap: ${(props) => props.theme.spacing.gap}px;
   flex-direction: column;
+  flex: 1;
+  width: 100%;
 `;
 
 const StyledImage = styled.Image.attrs((props) => ({
   tintColor: props.tintColor,
+  resizeMode: "contain",
 }))`
   width: ${(props) =>
     props.isTablet
@@ -178,6 +182,7 @@ const StyledImage = styled.Image.attrs((props) => ({
 `;
 
 const StyledText = styled.Text`
+  width: 300%;
   font-size: ${(props) =>
     props.isTablet
       ? props.theme.sizes.fontSizeTablet
@@ -187,12 +192,9 @@ const StyledText = styled.Text`
       ? props.theme.sizes.fontWeightActive
       : props.theme.sizes.fontWeightInactive};
   text-align: center;
-  writing-direction: rtl;
   color: ${(props) =>
     props.focused
       ? props.theme.colors.textActive
       : props.theme.colors.textInactive};
   font-family: ${(props) => props.theme.fonts.primary};
-  flex-shrink: 1;
-  width: 80px; /* Adjust as needed to prevent overflow */
 `;

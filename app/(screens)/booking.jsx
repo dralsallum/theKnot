@@ -844,10 +844,11 @@ const Booking = () => {
     setSubmitting(true);
     try {
       const res = await axios.post(
-        `${BASE_URL}/quota`,
+        `${BASE_URL}/quota/vendor`,
         {
           firstName: firstName,
           lastName: lastName,
+          vendor: id,
           email: email,
           phoneNumber: phoneNumber,
           weddingDate: weddingDate,
@@ -862,7 +863,7 @@ const Booking = () => {
         }
       );
       setSuccess(true);
-      setFormStep(3); // Move to success step
+      setFormStep(3);
     } catch (err) {
       setError(
         err.response?.data?.error ||

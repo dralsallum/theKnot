@@ -47,7 +47,7 @@ const Container = styled.SafeAreaView`
 // Search icon at top-right
 const CartIcon = styled.TouchableOpacity`
   position: absolute;
-  right: 20px;
+  left: 20px;
   top: 20px;
   z-index: 10;
 `;
@@ -62,7 +62,7 @@ const RegistryTitle = styled.Text`
   font-size: 38px;
   font-weight: bold;
   margin-top: 20px;
-  margin-left: 20px;
+  margin-right: 20px;
   margin-bottom: 20px;
   text-align: left;
 `;
